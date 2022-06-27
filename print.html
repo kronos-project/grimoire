@@ -1,0 +1,1083 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>The Kronos Grimoire</title>
+        <meta name="robots" content="noindex" />
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="A deep dive into the game&#x27;s internals and the Kronos project orchestration">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="internals/args.html"><strong aria-hidden="true">1.</strong> Graphical Client Arguments</a></li><li class="chapter-item expanded "><a href="internals/string-id.html"><strong aria-hidden="true">2.</strong> String IDs</a></li><li class="chapter-item expanded "><a href="internals/dml/index.html"><strong aria-hidden="true">3.</strong> Data Markup Language</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="internals/dml/protocols.html"><strong aria-hidden="true">3.1.</strong> Protocols</a></li><li class="chapter-item expanded "><a href="internals/dml/messages.html"><strong aria-hidden="true">3.2.</strong> Messages</a></li><li class="chapter-item expanded "><a href="internals/dml/tables.html"><strong aria-hidden="true">3.3.</strong> Tables</a></li></ol></li><li class="chapter-item expanded "><a href="internals/object-property/index.html"><strong aria-hidden="true">4.</strong> ObjectProperty</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="internals/object-property/property-classes.html"><strong aria-hidden="true">4.1.</strong> Property Classes</a></li><li class="chapter-item expanded "><a href="internals/object-property/serialization.html"><strong aria-hidden="true">4.2.</strong> Serialization</a></li></ol></li><li class="chapter-item expanded "><a href="internals/protocol/index.html"><strong aria-hidden="true">5.</strong> Network Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="internals/protocol/framing.html"><strong aria-hidden="true">5.1.</strong> Framing</a></li><li class="chapter-item expanded "><a href="internals/protocol/control.html"><strong aria-hidden="true">5.2.</strong> Control Messages</a></li><li class="chapter-item expanded "><a href="internals/protocol/data.html"><strong aria-hidden="true">5.3.</strong> Data Messages</a></li><li class="chapter-item expanded "><a href="internals/protocol/sessions.html"><strong aria-hidden="true">5.4.</strong> Sessions</a></li></ol></li><li class="chapter-item expanded "><a href="internals/kiwad.html"><strong aria-hidden="true">6.</strong> KIWAD Archives</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Kronos Grimoire</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://gitlab.com/vale_/kronos" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="the-kronos-grimoire"><a class="header" href="#the-kronos-grimoire">The Kronos Grimoire</a></h1>
+<p>Greetings, young Wizard! A long and adventurous journey brought you to this source of secret
+knowledge and dark arts. With this grimoire as your faithful companion, you will uncover the
+deepest mysteries in the spiral.</p>
+<h2 id="what-it-is-not"><a class="header" href="#what-it-is-not">What it is (not)</a></h2>
+<p>This cursed book is the primary source of documentation for the Kronos project, for regular
+users and contributors alike.</p>
+<p>Topics that are within the scope of this book include, among others, documentation of the
+game's inner workings, descriptions of the game protocols, and file formats.</p>
+<p>That being said, it is not a goal to discuss the algorithmic implementation details of both
+Kronos and official KingsIsle code.</p>
+<h2 id="contributing"><a class="header" href="#contributing">Contributing</a></h2>
+<p>In the interest of access control and sensibility for what we share here, the sources of this
+book are hosted in a private repository with automated deployment to
+<a href="https://github.com/kronos-project/grimoire"><code>kronos-project/grimoire</code></a>.</p>
+<p>If you find any of the information confusing, misleading or wrong, or would like to suggest
+additional material and content to be covered here, don't hesitate to file an issue in the
+repository or reach out to <code>Vale#5252</code> on Discord.</p>
+<p>While we do not accept direct contributions, exchange and suggestions are always welcome.</p>
+<h2 id="licensing"><a class="header" href="#licensing">Licensing</a></h2>
+<p>The text of this book is provided as-is under the terms of the
+<a href="https://creativecommons.org/licenses/by-nc-sa/4.0">CC BY-NC-SA 4.0</a> license. All code snippets
+are licensed under the terms of the <a href="https://choosealicense.com/licenses/isc/">ISC License</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="graphical-client-arguments"><a class="header" href="#graphical-client-arguments">Graphical Client Arguments</a></h1>
+<p><code>WizardGraphicalClient</code> will happily spit out a list of CLI arguments if passed <code>-?</code> but this is outdated. </p>
+<p>This page attempts to correctly document a list of available arguments.</p>
+<table><thead><tr><th>Argument</th><th>Usage</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>-?</code></td><td><code>-?</code></td><td>Print outdated arguments list</td></tr>
+<tr><td><code>-A</code></td><td><code>-A [STRING]</code></td><td>Locale</td></tr>
+<tr><td><code>-CS</code></td><td><code>-CS</code></td><td>Dumps the Client Signature</td></tr>
+<tr><td><code>-C</code></td><td><code>-C [STRING]</code></td><td>Character name/ID</td></tr>
+<tr><td><code>-D</code></td><td><code>-D [PATH]</code></td><td>Path to data root dir</td></tr>
+<tr><td><code>-EF_OVERFLOW</code></td><td><code>-EF_OVERFLOW</code></td><td>Enable overflow detection</td></tr>
+<tr><td><code>-EF_UNDERFLOW</code></td><td><code>-EF_UNDERFLOW</code></td><td>Enable underflow detection</td></tr>
+<tr><td><code>-G</code></td><td><code>-G [PATH]</code></td><td>Path to log file</td></tr>
+<tr><td><code>-HD</code></td><td><code>-HD</code></td><td>Enable heap debugging</td></tr>
+<tr><td><code>-HS</code></td><td><code>-HS</code></td><td>Enable heap server</td></tr>
+<tr><td><code>-IgnoreMissingParams</code></td><td><code>-IgnoreMissingParams</code></td><td>Ignore missing parameters</td></tr>
+<tr><td><code>-L</code></td><td><code>-L [HOST] [PORT]</code></td><td>Login server to use</td></tr>
+<tr><td><code>-O</code></td><td><code>-O</code></td><td>Whether to log all resource requests</td></tr>
+<tr><td><code>-PT</code></td><td><code>-PT [INT]</code></td><td>&quot;PatchClientPatchTime&quot;</td></tr>
+<tr><td><code>-ST</code></td><td><code>-ST</code></td><td>&quot;-Steam Required&quot;</td></tr>
+<tr><td><code>-T</code></td><td><code>-T [STRING]</code></td><td>&quot;Test Local Zone&quot;</td></tr>
+<tr><td><code>-UN</code></td><td><code>-UN [0/1]</code></td><td>Whether to force unique character names</td></tr>
+<tr><td><code>-U</code></td><td><code>-U ..[UID] [CK2] [USERNAME]</code></td><td>User credentials passed in by patch client</td></tr>
+<tr><td><code>-V</code></td><td><code>-V</code></td><td>&quot;DoServerSelection&quot;</td></tr>
+<tr><td><code>-X</code></td><td><code>-X</code></td><td>&quot;Dump Classes to Filename&quot;</td></tr>
+<tr><td><code>-c</code></td><td><code>-c</code></td><td>Checks compression for VolumeWAD files</td></tr>
+<tr><td><code>-u</code></td><td><code>-u [STRING],[STRING],...</code></td><td>Wildcards for uncompressed VolumeWAD files</td></tr>
+</tbody></table>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="string-id"><a class="header" href="#string-id">String ID</a></h1>
+<p>In many places throughout the game, strings are hashed into 32-bit integer values
+which are more compact to handle and convey similar intent.</p>
+<p>Such places are <em>ObjectProperty</em> serialization, implementation-defined error codes
+in the network protocol, and enums in code.</p>
+<h2 id="algorithm"><a class="header" href="#algorithm">Algorithm</a></h2>
+<p>The following presents our flavor of the algorithm which differs from KI's but
+produces matching results.</p>
+<pre><code class="language-py">def sign_extend(value: int) -&gt; int:
+    return (value &amp; 0x7FFFFFFF) - (value &amp; 0x80000000)
+
+
+def make_string_id(string: str) -&gt; int:
+    result = 0
+
+    for index, value in enumerate(string.encode()):
+        value -= 32
+        shift = 5 * index % 32
+
+        result ^= sign_extend(value &lt;&lt; shift)
+        if shift &gt; 24:
+            result ^= sign_extend(value &gt;&gt; (32 - shift))
+
+    return abs(result) &amp; 0xFFFFFFFF
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="data-markup-language"><a class="header" href="#data-markup-language">Data Markup Language</a></h1>
+<p>The &quot;Data Markup Language&quot;, often referred to as &quot;DML&quot;, is a proprietary data serialization
+system developed by KingsIsle for use in their games. At its core, it follows a
+<a href="https://en.wikipedia.org/wiki/Remote_procedure_call">remote procedure call</a> model as it
+is primarily used for data exchange over the network which triggers the execution of
+designated handlers based on message types.</p>
+<p>Protocols and data messages are described by a custom specification format in
+<a href="https://de.wikipedia.org/wiki/Extensible_Markup_Language">XML</a>. Correspondingly, such
+specification files are often seen as regular <code>*Messages.xml</code> files. Their structure and
+composition will be explained on the fly when discussing protocols and messages.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="protocols"><a class="header" href="#protocols">Protocols</a></h1>
+<p>Protocols are the primary entity of the DML serialization system. Each protocol is
+uniquely identified by an ID and groups together several <a href="internals/dml/./messages.html">messages</a>
+together.</p>
+<p>One protocol may be described per XML file and the name of the protocol (which is equal
+to the specification file name in most cases) may be defined as the root XML tag:</p>
+<pre><code class="language-xml">&lt;MyAwesomeProtocol&gt;
+  &lt;!-- Protocol description here --&gt;
+&lt;/MyAwesomeProtocol&gt;
+</code></pre>
+<h2 id="protocol-information"><a class="header" href="#protocol-information">Protocol information</a></h2>
+<p>Every protocol must have a child XML element named <code>_ProtocolInfo</code> assigned to it.
+Its record holds the following mandatory message fields:</p>
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>ServiceID</td><td>UBYT</td><td>A unique service ID for the protocol service provider</td></tr>
+<tr><td>ProtocolType</td><td>STR</td><td>A unique name for the type of protocol being defined</td></tr>
+<tr><td>ProtocolVersion</td><td>INT</td><td>The version of the DML system that is used by the protocol</td></tr>
+<tr><td>ProtocolDescription</td><td>STR</td><td>A description of the purpose the protocol serves</td></tr>
+</tbody></table>
+<p>When serializing protocol messages over the network, the ServiceID identifies the higher-order
+protocol of the message to read. As such, implementors will have to track all accessible
+<code>ServiceID</code>s accordingly for lookup.</p>
+<p>For more information on types, records and fields, see the documentation for
+<a href="internals/dml/./messages.html">messages</a>.</p>
+<h3 id="example"><a class="header" href="#example">Example</a></h3>
+<pre><code class="language-xml">&lt;MyAwesomeProtocol&gt;
+  &lt;_ProtocolInfo&gt;
+    &lt;RECORD&gt;
+      &lt;ServiceID TYPE=&quot;UBYT&quot;&gt;123&lt;/ServiceID&gt;
+      &lt;ProtocolType TYPE=&quot;STR&quot;&gt;AWESOME&lt;/ProtocolType&gt;
+      &lt;ProtocolVersion TYPE=&quot;INT&quot;&gt;1&lt;/ProtocolVersion&gt;
+      &lt;ProtocolDescription TYPE=&quot;STR&quot;&gt;Super awesome protocol&lt;/ProtocolDescription&gt;
+    &lt;/RECORD&gt;
+  &lt;/_ProtocolInfo&gt;
+&lt;/MyAwesomeProtocol&gt;
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="messages"><a class="header" href="#messages">Messages</a></h1>
+<p>Messages are the central data structures exposed by a <a href="internals/dml/./protocols.html">protocol</a>. They
+define a data layout and are used for runtime serialization and deserialization of data.</p>
+<p>A message consists of an XML element with its sole child element being a <a href="internals/dml/messages.html#records">record</a>
+holding the data <a href="internals/dml/messages.html#fields">fields</a> along with their <a href="internals/dml/messages.html#metadata">metadata</a>.</p>
+<p>A DML message may be defined like this:</p>
+<pre><code class="language-xml">&lt;MSG_PING&gt;
+  &lt;RECORD&gt;
+    &lt;!-- Message metadata --&gt;
+    &lt;_MsgName TYPE=&quot;STR&quot; NOXFER=&quot;TRUE&quot;&gt;MSG_PING&lt;/_MsgName&gt;
+    &lt;_MsgType TYPE=&quot;UBYT&quot; NOXFER=&quot;TRUE&quot;&gt;1&lt;/_MsgType&gt;
+    &lt;_MsgDescription TYPE=&quot;STR&quot; NOXFER=&quot;TRUE&quot;&gt;PING request.&lt;/_MsgDescription&gt;
+    &lt;_MsgHandler TYPE=&quot;STR&quot; NOXFER=&quot;TRUE&quot;&gt;MSG_Ping&lt;/_MsgHandler&gt;
+    &lt;_MsgAccessLvl TYPE=&quot;UBYT&quot; NOXFER=&quot;TRUE&quot;&gt;0&lt;/_MsgAccessLvl&gt;
+
+    &lt;!-- Data fields --&gt;
+    &lt;Count TYPE=&quot;UINT&quot;&gt;&lt;/Count&gt;
+  &lt;/RECORD&gt;
+&lt;/MSG_PING&gt;
+</code></pre>
+<h2 id="records"><a class="header" href="#records">Records</a></h2>
+<p>Records only ever occur as XML elements named <code>RECORD</code> inside
+<a href="internals/dml/./protocols.html#protocol-information">protocol information elements</a> and messages.</p>
+<p>They group various <a href="internals/dml/messages.html#fields">fields</a> together.</p>
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
+<p>Fields are used to represent the data layout of a DML message structure or important
+metadata for both, <a href="internals/dml/./protocols.html#protocol-information">protocols</a> and
+<a href="internals/dml/messages.html#metadata">messages</a> alike. They only ever occur inside <a href="internals/dml/messages.html#records">record</a> elements.</p>
+<p>When used to describe metadata, fields always have a fixed value assigned to them. In
+most cases however, their values are undefined and will be filled with runtime object
+values.</p>
+<h3 id="field-attributes"><a class="header" href="#field-attributes">Field attributes</a></h3>
+<p>Fields may carry specific properties indicated by key-value pairs of XML attributes.
+The following presents known attributes, their supported values, and how they influence
+the behavior of a field.</p>
+<h4 id="types"><a class="header" href="#types">Types</a></h4>
+<p>The most common attribute is <code>TYPE</code>. It specifies the data type of <a href="internals/dml/messages.html#fields">fields</a>
+using a string acronym:</p>
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>BYT</td><td>int8</td><td>Signed 8-bit integer</td></tr>
+<tr><td>UBYT</td><td>uint8</td><td>Unsigned 8-bit integer</td></tr>
+<tr><td>USHRT</td><td>uint16</td><td>Unsigned 16-bit integer in little-endian byteorder</td></tr>
+<tr><td>INT</td><td>int32</td><td>Signed 32-bit integer in little-endian byteorder</td></tr>
+<tr><td>UINT</td><td>uint32</td><td>Unsigned 32-bit integer in little-endian byteorder</td></tr>
+<tr><td>STR</td><td>uint8[]</td><td>A length-prefixed string of arbitrary bytes (may be UTF-8)</td></tr>
+<tr><td>WSTR</td><td>uint16[]</td><td>A length-prefixed string of UTF-16 code points in little-endian order</td></tr>
+<tr><td>FLT</td><td>float</td><td>IEEE-754 32-bit floating point number in little-endian byteorder</td></tr>
+<tr><td>DBL</td><td>double</td><td>IEEE-754 64-bit floating point number in little-endian byteorder</td></tr>
+<tr><td>GID</td><td>uint64</td><td>Unsigned 64-bit integer in little-endian byteorder</td></tr>
+</tbody></table>
+<h4 id="visibility"><a class="header" href="#visibility">Visibility</a></h4>
+<p>Every field may individually control whether it is visible as a serializable data field
+or not. This is accomplished by setting the <code>NOXFER</code> attribute to either <code>&quot;TRUE&quot;</code> or
+<code>&quot;FALSE&quot;</code>.</p>
+<p>NOXFER stands for &quot;No Transfer&quot; and is mostly used for <a href="internals/dml/messages.html#metadata">metadata fields</a> which
+carry fixed values. As per convention, such fields should always start with an underscore
+(<code>_</code>) in their name to highlight the hidden status.</p>
+<h3 id="serialization"><a class="header" href="#serialization">Serialization</a></h3>
+<p>Serialization and deserialization of a message works by consecutively iterating through the
+fields in the order they were listed in the message specification, and encoding the value as
+defined by the type. Fields with the <code>NOXFER</code> attribute will be skipped.</p>
+<h4 id="example-1"><a class="header" href="#example-1">Example</a></h4>
+<p>The message</p>
+<pre><code class="language-xml">&lt;MSG_PERSON&gt;
+  &lt;RECORD&gt;
+    &lt;Name TYPE=&quot;STR&quot;&gt;Edgar Allan Poe&lt;/Name&gt;
+    &lt;Age TYPE=&quot;UBYT&quot;&gt;40&lt;/Age&gt;
+  &lt;/RECORD&gt;
+&lt;/MSG_PERSON&gt;
+</code></pre>
+<p>serializes to</p>
+<pre><code class="language-python">[
+    # String length prefix (15)
+    0x0f, 0x00,
+    # String bytes without null terminator (Edgar Allan Poe)
+    0x45, 0x64, 0x67, 0x61, 0x72, 0x20, 0x41, 0x6c, 0x6c, 0x61, 0x6e, 0x20, 0x50, 0x6f, 0x65,
+    # Age byte (40)
+    0x28
+]
+</code></pre>
+<h2 id="metadata"><a class="header" href="#metadata">Metadata</a></h2>
+<p>The records of messages may have a set of hidden <a href="internals/dml/messages.html#fields">fields</a> assigned to them which
+solely describe metadata required for runtime handling and querying of individual messages.</p>
+<p>Unlike the <a href="internals/dml/./protocols.html#protocol-information">protocol information</a> however, these fields
+must all be marked as <a href="internals/dml/messages.html#visibility"><code>NOXFER</code></a>.</p>
+<p>Below is a list of fields and their meaning. Some of them are discussed in greater detail
+in subsections of this paragraph.</p>
+<table><thead><tr><th>Name</th><th>Type</th><th>Optional</th><th>Description</th></tr></thead><tbody>
+<tr><td>_MsgName</td><td>STR</td><td>true</td><td>The name of the message; Overrides the XML message tag</td></tr>
+<tr><td>_MsgOrder</td><td>UBYT</td><td>true</td><td>The <a href="internals/dml/messages.html#order-number">order value</a></td></tr>
+<tr><td>_MsgDescription</td><td>STR</td><td>true</td><td>Short description of the message and its purpose</td></tr>
+<tr><td>_MsgHandler</td><td>STR</td><td>false</td><td>The handler callback to process this message when received</td></tr>
+<tr><td>_MsgAccessLvl</td><td>UBYT</td><td>true</td><td>The <a href="internals/dml/messages.html#access-level">access level</a> for the message</td></tr>
+</tbody></table>
+<h3 id="order-number"><a class="header" href="#order-number">Order number</a></h3>
+<p>Every message has its own index assigned to it that is unique within a protocol - the order
+value. Order values usually start at <code>1</code> and are used in combination with the unique service
+ID of the protocol to address a specific message when several protocols are available at once.</p>
+<p>As the value is represented as an unsigned 8-bit integer, the amount of messages per protocol
+is limited to 255 as a result of that.</p>
+<p>Order values may either be explicitly specified using the <code>_MsgOrder</code> field or left away for
+every message within the protocol. In case of the latter, the implementation automatically
+assigns order values in ascending order by sorting message names alphabetically. Mixing both
+approaches up may result in collisions!</p>
+<h3 id="access-level"><a class="header" href="#access-level">Access level</a></h3>
+<p>The access level defines the minimum value that must be held by a session in order to be
+allowed to process the message.</p>
+<p>For the scope of the system, this trait is fairly unimportant, but it plays a great role
+in handling <a href="internals/dml/../protocol/sessions.html#access-level">network sessions</a> and is further explained
+there.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="dml-tables"><a class="header" href="#dml-tables">DML Tables</a></h1>
+<p>This is a binary format which is used most notably for <code>LatestFileList.bin</code>.</p>
+<p>All integers are in little-endian byte order unless otherwise specified.</p>
+<h2 id="type-tag"><a class="header" href="#type-tag">Type Tag</a></h2>
+<p>When binary-serialized, the subsequent values of field types are identified
+by a tag value dynamically. The following maps tags to their respective
+DML types:</p>
+<table><thead><tr><th>Tag</th><th>Type</th></tr></thead><tbody>
+<tr><td>0</td><td>GID</td></tr>
+<tr><td>1</td><td>INT</td></tr>
+<tr><td>2</td><td>UINT</td></tr>
+<tr><td>3</td><td>FLT</td></tr>
+<tr><td>4</td><td>BYT</td></tr>
+<tr><td>5</td><td>UBYT</td></tr>
+<tr><td>6</td><td>USHRT</td></tr>
+<tr><td>7</td><td>DBL</td></tr>
+<tr><td>8</td><td>STR</td></tr>
+<tr><td>9</td><td>WSTR</td></tr>
+</tbody></table>
+<h2 id="message-orders"><a class="header" href="#message-orders">Message Orders</a></h2>
+<p>DML tables at present only use message types defined in the <code>ExtendedBaseMessages</code>
+protocol.</p>
+<table><thead><tr><th>Index</th><th>Type</th></tr></thead><tbody>
+<tr><td>1</td><td>MSG_CUSTOMDICT</td></tr>
+<tr><td>2</td><td>MSG_CUSTOMRECORD</td></tr>
+</tbody></table>
+<h2 id="structure"><a class="header" href="#structure">Structure</a></h2>
+<p>The following documents the outline of a serialized table blob.</p>
+<h3 id="table"><a class="header" href="#table">Table</a></h3>
+<p>This structure and everything it encapsulates should be read as many times as needed until EOF is reached.</p>
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>ValuesLength</td><td>UINT</td><td>Length of the Values array</td></tr>
+<tr><td>Values</td><td>Value[]</td><td>Array of Value structures</td></tr>
+</tbody></table>
+<h3 id="value"><a class="header" href="#value">Value</a></h3>
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>ProtocolID</td><td>UBYT</td><td>ID of <code>ExtendedBaseMessages</code> protocol (always 2)</td></tr>
+<tr><td>-</td><td>UBYT</td><td>Type of structure that follows according to the <a href="internals/dml/tables.html#message-orders">Message Order</a></td></tr>
+<tr><td>Size</td><td>USHRT</td><td>Size of this structure including everything it encapsulates</td></tr>
+</tbody></table>
+<h3 id="recordtemplate"><a class="header" href="#recordtemplate">RecordTemplate</a></h3>
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>RecordFields</td><td>RecordField[]</td><td>Array of RecordField structures</td></tr>
+</tbody></table>
+<h3 id="recordfield"><a class="header" href="#recordfield">RecordField</a></h3>
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>Length</td><td>USHRT</td><td>Length prefix of Name</td></tr>
+<tr><td>Name</td><td>STR</td><td>Name of the field<br/>If the name is <code>_TargetTable</code> then the TargetTable structure should be read after this structure</td></tr>
+<tr><td>Type</td><td>UBYT</td><td>Type of the field according to the <a href="internals/dml/tables.html#type-tag">Type Tags</a> table</td></tr>
+<tr><td>?</td><td>UBYT</td><td>DML flags; implementation-specific</td></tr>
+</tbody></table>
+<h3 id="targettable"><a class="header" href="#targettable">TargetTable</a></h3>
+<p>This is assumed to <em>always</em> be part of a RecordTemplate as part of the specification.</p>
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>Length</td><td>USHRT</td><td>Length prefix of Name</td></tr>
+<tr><td>Name</td><td>STR</td><td>The table that Records of this type should belong to</td></tr>
+</tbody></table>
+<h3 id="record"><a class="header" href="#record">Record</a></h3>
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>-</td><td>-</td><td>Values should be read according to the RecordFields in the preceding RecordTemplate</td></tr>
+</tbody></table>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="objectproperty"><a class="header" href="#objectproperty">ObjectProperty</a></h1>
+<p><em>ObjectProperty</em> is KingsIsle's runtime reflection and serialization system for C++
+classes.</p>
+<p>It was initially written by <a href="https://github.com/rlyle">Richard Lyle</a> as part of the
+<a href="https://github.com/palestar/medusa">Medusa project</a> (see <code>Reflection</code> directory) and
+was later ported into KI's codebase with additional features and improvements.</p>
+<ul>
+<li>
+<p><a href="internals/object-property/./property-classes.html">Property Classes</a></p>
+</li>
+<li>
+<p><a href="internals/object-property/./serialization.html">Serialization</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="property-classes"><a class="header" href="#property-classes">Property Classes</a></h1>
+<p>Property Classes represent data structures with dynamic runtime reflection enabled on
+them, all of them inheriting from a common <code>PropertyClass</code> base.</p>
+<p>On a high-level, they can be thought of as</p>
+<pre><code class="language-cc">class PropertyClass {
+    /** Called before serialization. */
+    virtual void OnPreSave() = 0;
+
+    /** Called after serialization. */
+    virtual void OnPostSave() = 0;
+
+    /** Called before deserialization. */
+    virtual void OnPreLoad() = 0;
+
+    /** Called after deserialization. */
+    virtual void OnPostLoad() = 0;
+};
+</code></pre>
+<h2 id="properties"><a class="header" href="#properties">Properties</a></h2>
+<p>Properties are the reflected C++ members of a class. Note that these are not representative
+of the actual amount of members in total or their memory layout at all.</p>
+<p>Notoriously, properties can either be enum types, bitflag types, or regular value types.
+They all have a name (which potentially differs from the actual C++ member name), a unique
+integer ID, and a set of configuration flags assigned.</p>
+<p>Distinction between pointer types (raw and smart), references and value types is performed.</p>
+<p>The subsections of discuss all the important attributes and their importance.</p>
+<h3 id="names"><a class="header" href="#names">Names</a></h3>
+<p>It is valid to name properties after a nested path into the object it carries as a value.</p>
+<p>Consider the following example:</p>
+<pre><code class="language-cpp">union gid {
+    unsigned __int64 m_full;
+};
+</code></pre>
+<p>A property <code>gid m_id;</code> may in reality carry the name <code>m_id.m_full</code>, which indicates that
+instead of the <code>gid</code> serialization routine, the <code>unsigned __int64</code> routine should be used
+for the <code>m_full</code> member.</p>
+<p>Such a <code>m_id.m_full</code> property would correspondingly also report <code>unsigned __int64</code> as its
+type instead of <code>union gid</code>.</p>
+<h3 id="flags"><a class="header" href="#flags">Flags</a></h3>
+<p>Each property may carry a set of flag bits which influence its behavior. The following
+is a non-exhaustive list of known flag bits and their purpose:</p>
+<table><thead><tr><th>Bit</th><th>Purpose</th></tr></thead><tbody>
+<tr><td>0</td><td>Property value can be saved</td></tr>
+<tr><td>1</td><td>Property value may be copied/cloned</td></tr>
+<tr><td>2</td><td>Property has public visibility</td></tr>
+<tr><td>3</td><td>Property may be transmitted to players over the network</td></tr>
+<tr><td>4</td><td>Property may be transmitted to privileged players over the network</td></tr>
+<tr><td>5</td><td>Property may be persistently saved in database</td></tr>
+<tr><td>6</td><td>The property is deprecated and must be skipped by the serializer</td></tr>
+<tr><td>7</td><td>???</td></tr>
+<tr><td>8</td><td>Property may only be re-serialized if modified</td></tr>
+<tr><td>9</td><td>The <code>std::string</code> property stores a binary blob</td></tr>
+<tr><td>16</td><td>Property must not be edited</td></tr>
+<tr><td>17</td><td><code>std::string</code>s holding file names</td></tr>
+<tr><td>18</td><td>Set on properties of <code>class Color</code> type (some were forgotten)</td></tr>
+<tr><td>20</td><td>C-style bit flag enum type</td></tr>
+<tr><td>21</td><td>C++ enum class type where variants are scoped</td></tr>
+<tr><td>22</td><td><code>std::wstring</code>s holding i18n keys for GUI elements</td></tr>
+<tr><td>23</td><td><code>std::string</code>s holding string table key values</td></tr>
+<tr><td>24</td><td>Property is a key for its containing class</td></tr>
+<tr><td>25</td><td>Property is a key for a different class</td></tr>
+<tr><td>27</td><td>Property that holds the name of its containing class</td></tr>
+<tr><td>28</td><td>Set on properties that have the <code>__BASECLASS</code> option</td></tr>
+</tbody></table>
+<p>Note that bits 16-28 are mostly editor hints without any semantic features to them.</p>
+<h3 id="container"><a class="header" href="#container">Container</a></h3>
+<p>Every property further has a container type associated with it. Containers are
+dynamically-sized, homogenous collections of elements of the same type.</p>
+<p>Containers are dynamically-sized, homogenous collections of elements of type <code>T</code>.</p>
+<p>A property always reports the <code>T</code> as its type. Strictly speaking, a <code>List&lt;std::string&gt;</code>
+property actually has type <code>std::string</code> and the <code>&quot;List&quot;</code> container assigned to it.</p>
+<p>The actual containers directly map onto C++ types:</p>
+<table><thead><tr><th>Container</th><th>Property type</th><th>C++ type signature</th></tr></thead><tbody>
+<tr><td><code>Static</code></td><td><code>T</code></td><td><code>T</code></td></tr>
+<tr><td><code>Vector</code></td><td><code>T</code></td><td><code>std::vector&lt;T&gt;</code></td></tr>
+<tr><td><code>List</code></td><td><code>T</code></td><td><code>std::list&lt;T&gt;</code></td></tr>
+</tbody></table>
+<h3 id="enum"><a class="header" href="#enum">Enum</a></h3>
+<p>Enums come in two variants:</p>
+<ul>
+<li>
+<p>Plain, old C-style enums which are used as bit flag types.</p>
+</li>
+<li>
+<p>C++ enums with scoped variants</p>
+</li>
+</ul>
+<p>In both cases, the enum variants are runtime-accessible as <a href="internals/object-property/property-classes.html#options">options</a> of variant name
+and value pairs.</p>
+<h3 id="options"><a class="header" href="#options">Options</a></h3>
+<p>Options are pairs of names and values that can be assigned to a <a href="internals/object-property/property-classes.html#properties">properties</a>
+on an individual basis.</p>
+<p>Most commonly, they occur with the aforementioned enum types, but they can also be used with
+other types to map commonly expected values to names.</p>
+<p>Traditionally, they hold either integral or string values.</p>
+<p>A handful of them have a special meanings associated with them. These are detailed in the
+following subsections.</p>
+<h4 id="base-classes"><a class="header" href="#base-classes">Base classes</a></h4>
+<p>Some properties with <code>std::string</code> type have been observed to hold a special option named
+<code>__BASECLASS</code> which holds the name of a class type.</p>
+<p>They are believed to be editor hints without any semantic impact.</p>
+<h4 id="default-values"><a class="header" href="#default-values">Default values</a></h4>
+<p>Properties can be assigned default values using a special <code>__DEFAULT</code> option which holds
+a string representation of the default value a property should default to if no other
+value is given during initialization.</p>
+<ul>
+<li>
+<p>To set an integer property to value 1 - <code>&quot;__DEFAULT&quot;: &quot;1&quot;</code></p>
+</li>
+<li>
+<p>To set a <code>Foo</code>-typed property to enum variant <code>Foo::kBar</code> - <code>&quot;__DEFAULT&quot;: &quot;kBar&quot;</code></p>
+</li>
+</ul>
+<h2 id="reflection"><a class="header" href="#reflection">Reflection</a></h2>
+<p>Reflection allows runtime interaction with property classes in one of the following ways:</p>
+<ul>
+<li>
+<p>Introspection of values with unknown types</p>
+</li>
+<li>
+<p>Iterating over properties</p>
+</li>
+<li>
+<p>Querying properties by name/ID</p>
+</li>
+<li>
+<p>Accessing aforementioned property metadata</p>
+</li>
+<li>
+<p>Check if class is subclass of a certain other type</p>
+</li>
+<li>
+<p>Clone/copy property values into different types</p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="serialization-1"><a class="header" href="#serialization-1">Serialization</a></h1>
+<p>This aims to give insight into the serialization of Property Classes.</p>
+<p>The following uses Python pseudocode for illustration which makes use of format strings
+defined by the <a href="https://docs.python.org/3/library/struct.html">struct module</a>.</p>
+<h2 id="binary"><a class="header" href="#binary">Binary</a></h2>
+<p>The binary serialization mode is commonly encountered for both local game files and also
+for <code>STR</code> types in many DML messages transferred over the network.</p>
+<h3 id="buffering"><a class="header" href="#buffering">Buffering</a></h3>
+<p>For writing the binary data, a sink with bit-oriented instead of byte-oriented buffering
+is preferred due to some types being serialized in units of single bits only.</p>
+<p>In such cases, the buffer should progress sequentially from the LSB of a byte to its MSB
+before advancing to the next one.</p>
+<p>When the binary size of a type is in units of whole bytes, the buffer will be aligned to the
+start of a full byte with bit position 0, if not already there, before writing said type.</p>
+<h3 id="flags-1"><a class="header" href="#flags-1">Flags</a></h3>
+<p>Binary serializers and deserializers may have a set of flags attached to them to customize
+their behavior:</p>
+<table><thead><tr><th>Bit</th><th>Purpose</th></tr></thead><tbody>
+<tr><td>0</td><td>Indicates that these flags should be serialized and re-used by the deserializer</td></tr>
+<tr><td>1</td><td>Tries to pack length prefixes into smaller quantities for compact serialization</td></tr>
+<tr><td>2</td><td>Causes enum variants to be serialized as human-readable strings instead of values</td></tr>
+<tr><td>3</td><td>Enables <a href="https://zlib.net">zlib</a> compression of serialized object state</td></tr>
+<tr><td>4</td><td>Properties with flag bit <code>8</code> set must always be dirty when serialized</td></tr>
+</tbody></table>
+<h3 id="header"><a class="header" href="#header">Header</a></h3>
+<p>A serialized stream starts with the necessary header data followed by the compressed or
+uncompressed object bytes:</p>
+<pre><code class="language-py">output = bytearray()
+
+# Serialize our flags value if `STATEFUL_FLAGS` (bit 0) is set.
+if serializer_flags &amp; STATEFUL_FLAGS != 0:
+    output.extend(serializer_flags.to_bytes(4, &quot;little&quot;))
+
+# Handle compression if `WITH_COMPRESSION` (bit 3) is set.
+if serializer_flags &amp; WITH_COMPRESSION != 0:
+    compressed_object_data = zlib.compress(object_data)
+
+    if len(compressed_object_data) &lt; len(object_data):
+        object_data = compressed_object_data
+
+        # Indicate that the data is compressed.
+        output.append(1)
+        # Write the size of the uncompressed object for the deserializer to validate.
+        output.extend(len(object_data).to_bytes(4, &quot;little&quot;))
+    else:
+        # Indicate that the data is uncompressed.
+        output.append(0)
+
+# Write either the compressed or uncompressed data.
+output.extend(object_data)
+</code></pre>
+<h3 id="objects-and-properties"><a class="header" href="#objects-and-properties">Objects and Properties</a></h3>
+<p>The serialization system deals with whole <code>PropertyClass</code>es at any time. No loose values
+anywhere.</p>
+<p>A serializer accepts the following inputs to customize its behavior:</p>
+<ul>
+<li>
+<p>a <a href="internals/object-property/serialization.html#flags">mask of serializer flags</a> for configuration</p>
+</li>
+<li>
+<p>a boolean denoting whether the output will be <em>shallow</em> or <em>deep</em></p>
+</li>
+<li>
+<p>a wildcard of property flag bits to only serialize those properties where that mask is
+an intersection of the actual flags</p>
+</li>
+</ul>
+<h4 id="data-model"><a class="header" href="#data-model">Data model</a></h4>
+<p>The <em>ObjectProperty</em> data model defines what types are supported and how they are serialized.
+This may be freely extended with custom types that are implementation-defined and not
+<code>PropertyClass</code>es themselves.</p>
+<p>The following examples of serialization modes will use an imaginary <code>serialize_value</code> function
+that should be thought of as a mapping arbitrary values into this data model and serializing
+them to the <code>buffer</code> argument.</p>
+<p>Be sure to consider the buffering remarks at the start when implementing this.</p>
+<ul>
+<li>
+<p>booleans will be written as a single bit; <code>1</code> for <code>true</code> and <code>0</code> for <code>false</code></p>
+</li>
+<li>
+<p>primitive integer types (signed and unsigned) will be written as bytes in little-endian order</p>
+</li>
+<li>
+<p>floating-point numbers according to IEEE-754 are bit-copied into <code>uint32_t</code>/<code>uint64_t</code> and
+serialized as such</p>
+</li>
+<li>
+<p>strings are serialized as UTF-8 bytes with their <strong>length prefixed</strong></p>
+</li>
+<li>
+<p>wide strings are serialized as UTF-16 code points in little-endian order without BOM and with
+their <strong>length prefixed</strong></p>
+</li>
+<li>
+<p>collections, such as lists or vectors, are serialized as a sequence of element values with
+their <strong>length prefixed</strong></p>
+</li>
+<li>
+<p>tuples or arrays with a known length are serialized as just the sequence of elements</p>
+</li>
+<li>
+<p>when a property is <strong>opional</strong> (i.e. has bit 8 set in its flags set), its value may be
+skipped (unless the serializer has bit 4 set in its flags); a single bit of <code>0</code> denotes that no
+value is given, otherwise a value of <code>1</code> followed by the property's value is written</p>
+</li>
+<li>
+<p>enum variants are either serialized as their integral value or, when serializer flag bit 2 is
+set, as a string representation of the variant name</p>
+<ul>
+<li>an empty string for bit enums is equivalent to a value of <code>0</code></li>
+<li>the bit enum variant string is a list of flag names: <code>A|B|C</code></li>
+</ul>
+</li>
+<li>
+<p><strong>length prefixes</strong> are <code>uint16_t</code> for (w)strings and <code>uint32_t</code> for collections unless serializer
+bit 1 is set, which enables a common compression algorithm applied to both types - when the length
+is smaller than <code>0x80</code>, write it as <code>uint8_t</code> with the LSB set to <code>0</code>, otherwise write it as
+<code>uint32_t</code> with LSB set to <code>1</code></p>
+</li>
+</ul>
+<h4 id="type-tag-1"><a class="header" href="#type-tag-1">Type Tag</a></h4>
+<p>Every serialized <code>PropertyClass</code> state has a type tag associated with it to uniquely identify it
+during deserialization.</p>
+<p>The type tag is a <a href="internals/object-property/../string-id.html"><strong>string ID</strong></a> of the type's name.</p>
+<h4 id="property-tag"><a class="header" href="#property-tag">Property Tag</a></h4>
+<p>Property tags uniquely identify a property within an object in <em>deep</em> serialization mode.</p>
+<p>The tag is a sum of the property type's <a href="internals/object-property/../string-id.html"><strong>string ID</strong></a> and a slightly modified
+<a href="https://theartincode.stanis.me/008-djb2/">djb2 hash</a> of the property's name with the MSB value discarded.</p>
+<p>Practically speaking:</p>
+<pre><code class="language-py">type_tag = string_id(property.type_name)  # NOT object.type_name
+name_hash = djb2(property.name) &amp; 0x7FFF_FFFF
+
+property_tag = (type_tag + name_hash) &amp; 0xFFFF_FFFF
+</code></pre>
+<h4 id="shallow-mode"><a class="header" href="#shallow-mode">Shallow mode</a></h4>
+<p>In shallow mode, the 32-bit <a href="internals/object-property/serialization.html#type-tag">object type tag</a> is written followed by a sequence of masked
+property values in their correct order:</p>
+<pre><code class="language-py">buffer = BinaryBuffer()
+
+buffer.write(&quot;&lt;I&quot;, object.type_hash)
+for property in filter(lambda p: p.flags &amp; mask == mask, object.properties):
+    serialize_value(buffer, property.value)
+</code></pre>
+<p>This mode is <strong>not</strong> allowed to skip properties with the <code>DEPRECATED</code> (bit 6) flag set, as
+a correct order of values is the only indicator that exists to correctly reconstruct the
+object during deserialization.</p>
+<h4 id="deep-mode"><a class="header" href="#deep-mode">Deep mode</a></h4>
+<p>In deep mode, the concept is a bit different. Here, the 32-bit <a href="internals/object-property/serialization.html#type-tag">object type tag</a>
+is serialized, followed by a mapping of <a href="internals/object-property/serialization.html#property-tag">property tags</a> to their values.
+Additionally, size information in bits is written for integrity validation.</p>
+<p>In practice, this looks like this:</p>
+<pre><code class="language-py">buffer = BitBuffer()
+
+buffer.write(&quot;&lt;I&quot;, object.type_hash)
+
+# Reserve a placeholder for the object size.
+object_size_position = len(buffer)
+buffer.write(&quot;&lt;I&quot;, 0)
+
+# Here we don't only skip unmasked properties, but also deprecated ones.
+for property in filter(
+    lambda p: p.flags &amp; mask == mask and p.flags &amp; FLAG_DEPRECATED == 0, object.properties
+):
+    # Reserve a placeholder for the property size.
+    property_size_position = len(buffer)
+    buffer.write(&quot;&lt;I&quot;, 0)  # Will be replaced by a real size later.
+
+    # Write the mapping of property hash to value.
+    buffer.write(&quot;&lt;I&quot;, property.hash)
+    serialize_value(buffer, property.value)
+
+    # Patch back the real property size.
+    buffer.seek_bit(property_size_position)
+    buffer.write(&quot;&lt;I&quot;, len(buffer) - property_size_position)
+
+# Patch back the real object size.
+buffer.seek_bit(object_size_position)
+buffer.write(&quot;&lt;I&quot;, len(buffer) - object_size_position)
+</code></pre>
+<p>The order of property entries, while usually maintained, is not as important as it is for
+<strong>shallow</strong> serialization.</p>
+<h2 id="files"><a class="header" href="#files">Files</a></h2>
+<p>When serializing to files, a common convention is to use an <code>.xml</code> suffix. This orignates
+from different ways of representing the serialized data inside them.</p>
+<p>For debugging purposes, a human-readable format is often desired. It is very straightforward
+and can be fully explained in a short example:</p>
+<pre><code class="language-xml">&lt;Objects&gt;
+  &lt;Class Name=&quot;class Example&quot;&gt;
+    &lt;!-- We place a tag for every property and its value as the tag's content. --&gt;
+    &lt;m_someString&gt;Test&lt;/m_someString&gt;
+    &lt;m_someInt&gt;1337&lt;/m_someInt&gt;
+    &lt;m_someObject&gt;
+      &lt;Class Name=&quot;class SomeObject&quot;&gt;
+        &lt;m_test&gt;Properties holding objects will hold a nested Class element&lt;/m_test&gt;
+      &lt;/Class&gt;
+    &lt;/m_someObject&gt;
+    &lt;m_someTuple&gt;1,0,0,1&lt;/m_someTuple&gt;
+
+    &lt;!-- This is how we serialize properties holding container values. --&gt;
+    &lt;m_listOfStrings&gt;A&lt;/m_listOfStrings&gt; &lt;!-- Index 0 --&gt;
+    &lt;m_listOfStrings&gt;B&lt;/m_listOfStrings&gt; &lt;!-- Index 1 --&gt;
+    &lt;m_listOfStrings&gt;C&lt;/m_listOfStrings&gt; &lt;!-- Index 2 --&gt;
+  &lt;/Class&gt;
+&lt;/Objects&gt;
+</code></pre>
+<p>When distributing game data, specifically data that is not meant to be edited afterwards,
+a more compact format is often preferred. This is
+<a href="internals/object-property/serialization.html#objects-and-properties">exhaustive binary serialization</a> with a special file magic:</p>
+<pre><code class="language-py">FILE_MAGIC = 0x644E4942  # b&quot;BINd&quot; in little-endian byteorder
+
+buffer.write(&quot;&lt;I&quot;, FILE_MAGIC)
+buffer.extend(serialized_object_state)
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="network-protocol"><a class="header" href="#network-protocol">Network Protocol</a></h1>
+<p>The game makes use of a custom application-level protocol on top of TCP/UDP.</p>
+<p>This section goes into great detail of said protocol regarding its creation and management
+of user sessions and the custom framing protocol it uses to exchange data.</p>
+<blockquote>
+<p><strong>Note:</strong> Readers should be familiar with the <a href="internals/protocol/../dml/index.html">Data Markup Language</a>
+system prior to working through this.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="framing"><a class="header" href="#framing">Framing</a></h1>
+<p>At its core, a custom data framing format is used to exchange messages between two peers
+maintaining a connection. No difference is made between TCP-based and UDP-based
+connections.</p>
+<p>Frames generally start with a <a href="internals/protocol/framing.html#header">header</a>, followed by the <a href="internals/protocol/framing.html#body">body</a> holding the
+frame opcode and the encapsulated message payload. Assume all data to be encoded in
+little-endian byteorder unless stated otherwise.</p>
+<h2 id="header-1"><a class="header" href="#header-1">Header</a></h2>
+<p>Depending on the header type being used, the offsets of data in the following body
+may be shifted.</p>
+<h3 id="small"><a class="header" href="#small">Small</a></h3>
+<p>For <a href="internals/protocol/./data.html">data messages</a> where the DML message payload is below <code>0x8000</code> bytes
+in size, the following header is used:</p>
+<table><thead><tr><th>Offset</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>0x0</td><td>uint16</td><td>The constant magic <code>0xF00D</code></td></tr>
+<tr><td>0x2</td><td>uint16</td><td>The length of the following <a href="internals/protocol/framing.html#body">body</a></td></tr>
+</tbody></table>
+<h2 id="large"><a class="header" href="#large">Large</a></h2>
+<p>For <a href="internals/protocol/./data.html">data messages</a> above <code>0x7FFF</code> bytes in length, a different header
+encoding strategy is employed:</p>
+<table><thead><tr><th>Offset</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>0x0</td><td>uint16</td><td>The constant magic <code>0xF00D</code></td></tr>
+<tr><td>0x2</td><td>uint16</td><td>The constant <code>0x8000</code></td></tr>
+<tr><td>0x4</td><td>uint32</td><td>The real size of this &quot;large&quot; frame</td></tr>
+</tbody></table>
+<p>A deserializer should thus determine the size of the frame based on whether the
+second header field value is <code>&gt;= 0x8000</code>.</p>
+<h2 id="body"><a class="header" href="#body">Body</a></h2>
+<p>The body provides metadata of the contained message payload that is needed to decode it.</p>
+<p>Messages are either <a href="internals/protocol/./control.html">control messages</a> or <a href="internals/protocol/./data.html">data messages</a> which
+are further detailed in their respective sections.</p>
+<table><thead><tr><th>Offset</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>0x0</td><td>bool</td><td>Whether the frame is a <a href="internals/protocol/./control.html">control message</a></td></tr>
+<tr><td>0x1</td><td>uint8</td><td>The message <a href="internals/protocol/./control.html#opcode">opcode</a>; only for control messages</td></tr>
+<tr><td>0x2</td><td>uint8</td><td>Reserved; always zero</td></tr>
+<tr><td>0x3</td><td>uint8</td><td>Reserved; always zero</td></tr>
+<tr><td>0x4</td><td>uint8[]</td><td>The contained message data</td></tr>
+</tbody></table>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="control-messages"><a class="header" href="#control-messages">Control Messages</a></h1>
+<p>Control messages are transmitted to signal events related to the creation and maintenance of
+<a href="internals/protocol/./sessions.html">sessions</a> and connections in general.</p>
+<p>The following explains the purpose and structure of various types of control messages.</p>
+<p><em>TODO: Figure out opcode 0x1 and 0x2.</em></p>
+<h2 id="opcode"><a class="header" href="#opcode">Opcode</a></h2>
+<p>To identify a control message in the first place, the <a href="internals/protocol/./framing.html#body">frame body</a> encodes
+the message opcode. Opcodes are unique values that map to exactly one type of frame and tell
+the parser how the message data should be interpreted.</p>
+<p>For concrete values, see the following message types.</p>
+<h2 id="session-offer"><a class="header" href="#session-offer">Session Offer</a></h2>
+<blockquote>
+<p>Opcode: <code>0x0</code></p>
+</blockquote>
+<p>When a new client connects to the server, it is greeted with this type of frame. Since most
+of the game data exchange requires an active session, it must first be established through
+the client completing the handshake by responding with a <a href="internals/protocol/control.html#session-accept">Session Accept</a>
+message.</p>
+<table><thead><tr><th>Offset</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>0x0</td><td>uint16</td><td>The proposed <a href="internals/protocol/./sessions.html#session-id">session ID</a> to agree on</td></tr>
+<tr><td>0x2</td><td>int32</td><td>The high 4 bytes of the UNIX timestamp the message was sent at</td></tr>
+<tr><td>0x6</td><td>int32</td><td>The low 4 bytes of the UNIX timestamp the message was sent at</td></tr>
+<tr><td>0xA</td><td>uint32</td><td>The milliseconds into the second this message was sent at</td></tr>
+<tr><td>0xE</td><td>uint32</td><td>Length prefix for unknown field</td></tr>
+<tr><td>0x12</td><td>uint8[]</td><td>Unknown</td></tr>
+<tr><td>-</td><td>uint8</td><td>Reserved; always zero</td></tr>
+</tbody></table>
+<h2 id="keep-alive"><a class="header" href="#keep-alive">Keep Alive</a></h2>
+<blockquote>
+<p>Opcode: <code>0x3</code></p>
+</blockquote>
+<p>A bi-directional opcode that may be initiated independently by both, client and server.
+These messages are exchanged at fixed intervals and a <a href="internals/protocol/control.html#keep-alive-rsp">Keep Alive Rsp</a>
+from the other peer ensures the session is still alive.</p>
+<p>The structure of this message (and the response to it) varies depending on the party
+sending it:</p>
+<p><strong>Client-initiated Keep Alive:</strong></p>
+<table><thead><tr><th>Offset</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>0x0</td><td>uint16</td><td>The corresponding <a href="internals/protocol/./sessions.html#session-id">session ID</a></td></tr>
+<tr><td>0x2</td><td>uint16</td><td>The milliseconds into the second the message was sent at</td></tr>
+<tr><td>0x4</td><td>uint16</td><td>How many minutes have elapsed since the session was started</td></tr>
+</tbody></table>
+<p><strong>Server-initiated Keep Alive:</strong></p>
+<table><thead><tr><th>Offset</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>0x0</td><td>uint16</td><td><a href="internals/protocol/./sessions.html#session-id">Invalid session ID value</a></td></tr>
+<tr><td>0x2</td><td>uint32</td><td>The number of milliseconds since the server was started</td></tr>
+</tbody></table>
+<h2 id="keep-alive-rsp"><a class="header" href="#keep-alive-rsp">Keep Alive Rsp</a></h2>
+<blockquote>
+<p>Opcode: <code>0x4</code></p>
+</blockquote>
+<p>This message is used to acknowledge a received <a href="internals/protocol/control.html#keep-alive">Keep Alive</a> message and
+confirm that the other end of the connection is still listening. Either peer should
+respond to this using the structure of the preceding <a href="internals/protocol/control.html#keep-alive">Keep Alive</a> message.</p>
+<h2 id="session-accept"><a class="header" href="#session-accept">Session Accept</a></h2>
+<blockquote>
+<p>Opcode: <code>0x5</code></p>
+</blockquote>
+<p>Sent from the client to the server as a response to a <a href="internals/protocol/control.html#session-offer">Session Offer</a>
+message. This completes the handshake and confirms the creation of a new session bound
+to the proposed ID.</p>
+<p>From that point onwards, the session must be kept alive by
+<a href="internals/protocol/./sessions.html#heartbeat">heartbeating</a>.</p>
+<table><thead><tr><th>Offset</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>0x0</td><td>uint16</td><td>Reserved; always zero</td></tr>
+<tr><td>0x2</td><td>int32</td><td>The high 4 bytes of the UNIX timestamp the message was sent at</td></tr>
+<tr><td>0x6</td><td>int32</td><td>The low 4 bytes of the UNIX timestamp the message was sent at</td></tr>
+<tr><td>0xA</td><td>uint32</td><td>The milliseconds into the second the message was sent at</td></tr>
+<tr><td>0xE</td><td>uint16</td><td>The proposed session ID from <a href="internals/protocol/control.html#session-offer">Session Offer</a></td></tr>
+<tr><td>0x10</td><td>uint32</td><td>Length prefix for unknown field</td></tr>
+<tr><td>0x14</td><td>uint8[]</td><td>Unknown</td></tr>
+<tr><td>-</td><td>uint8</td><td>Reserved; always zero</td></tr>
+</tbody></table>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="data-messages"><a class="header" href="#data-messages">Data Messages</a></h1>
+<p>Data messages carry application-specific data defined by a <a href="internals/protocol/../dml/protocols.html">DML Protocol</a>.
+However, DML as a serialization system is not inherently related to the framing protocol
+itself, and should be considered a separate entity which is chosen due to its flexibility.</p>
+<p>Along with the encoded DML payload, a small header provides the metadata needed for the
+peer to understand the message.</p>
+<p>The &quot;message&quot; terminology can either stand for a data message as part of the framing
+protocol, which is documented here, or a DML message as a data structure encoded inside
+a data message. These are not to be confused with each other, see
+<a href="internals/protocol/../dml/index.html">Data Markup Language</a> for more details on the serialization system.</p>
+<h2 id="structure-1"><a class="header" href="#structure-1">Structure</a></h2>
+<p>An encoded message always follows a fixed structure. The opcode in the
+<a href="internals/protocol/./framing.html#body">frame body</a> is always set to <code>0</code> for data messages.</p>
+<table><thead><tr><th>Offset</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>0x0</td><td>uint8</td><td>The service ID the message belongs to</td></tr>
+<tr><td>0x1</td><td>uint8</td><td>The order number within the protocol</td></tr>
+<tr><td>0x2</td><td>uint16</td><td>The length of the entire DML message data, including this header</td></tr>
+<tr><td>0x4</td><td>uint8[len]</td><td>The serialized DML message data</td></tr>
+<tr><td><code>len</code></td><td>uint8</td><td>Trailing null byte; not considered by the length field</td></tr>
+</tbody></table>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="sessions"><a class="header" href="#sessions">Sessions</a></h1>
+<p>Sessions between a client and a server are an important aspect of the network communication
+as they grant various privileges and confirm the authenticity of a connecting clients.</p>
+<h2 id="handshake"><a class="header" href="#handshake">Handshake</a></h2>
+<p>To establish a new sessions between two peers, either directly after a client opened a
+connection or after the <a href="internals/protocol/sessions.html#refreshing-a-session">invalidation of a session</a>, a handshake
+must be performed.</p>
+<p>Clients should listen for <a href="internals/protocol/./control.html#session-offer">Session Offer</a> messages at any time,
+and respond with the appropriate <a href="internals/protocol/./control.html#session-accept">Session Accept</a> after
+receiving it.</p>
+<p>When the session IDs match and the server does not respond with yet another
+<a href="internals/protocol/./control.html#session-offer">Session Offer</a> message, the session should be considered
+established.</p>
+<p>Both parties are expected to cache the relevant information from the handshake, such as
+server uptime values, the timestamp the messages were sent, and obiously also the ID.
+Various algorithms may rely on these data as unique variables individually assigned to
+every client.</p>
+<h2 id="refreshing-a-session"><a class="header" href="#refreshing-a-session">Refreshing a session</a></h2>
+<p>During the lifetime of a TCP or UDP connection with the server, a very common event to
+expect is such sessions actually being dropped in the middle of operations.</p>
+<p>This act of dropping sessions is generally taking place when a client connects to
+several servers at the same time and establishes sessions with them while already maintaining
+a session with one of the servers. The server in question then tells all other servers
+(including the ones the client is still connected to) to drop any sessions with that specific
+client.</p>
+<p>But instead of closing the underlying socket, the session will be refreshed. Since servers
+are assuming that active exchange of messages only happens with one of them at the same
+time, regardless of how many a client is actually connected to, a server will wait for the
+first message from a client after the session invalidation, ignore it, and instead initiate
+the <a href="internals/protocol/sessions.html#handshake">handshaking process</a> with a different ID.</p>
+<p>When the process is completed, the client is expected to re-send its last message prior to
+receiving a new <a href="internals/protocol/./control.html#session-offer">Session Offer</a> message as the server ignored
+it up to that point.</p>
+<h2 id="session-id"><a class="header" href="#session-id">Session ID</a></h2>
+<p>The session ID is a unique identifier assigned to every active session individually. It is
+represented as an unsigned 16-bit integer and only one connection may occupy any valid
+session ID at the same time.</p>
+<p>A value of <code>0</code> is reserved to the server to indicate that a
+<a href="internals/protocol/./control.html#keep-alive">Keep Alive</a> message is server-initiated. It should never be
+assigned to clients in order to avoid confusion of frame types.</p>
+<h2 id="heartbeat"><a class="header" href="#heartbeat">Heartbeat</a></h2>
+<p>When the <a href="internals/protocol/sessions.html#handshake">handshake</a> was successfully completed and the session is up and
+running, the heartbeating process must begin in order to keep the session alive.</p>
+<p>This step involves exchanging <a href="internals/protocol/./control.html#keep-alive">Keep Alive</a> and corresponding
+<a href="internals/protocol/./control.html#keep-alive-rsp">Keep Alive Rsp</a> messages at fixed intervals and waiting
+for the response of the peer.</p>
+<p>Clients send such a request every <strong>10 seconds</strong>, whereas servers independently do so
+every <strong>60 seconds</strong>.</p>
+<p>When no response had been received directly before sending another request, the connection
+is considered dead and the underlying socket should be closed.</p>
+<h2 id="access-level-1"><a class="header" href="#access-level-1">Access Level</a></h2>
+<p>Access Levels are numeric values denoting a specific set of permissions associated with
+the session between an individual client and the server. Generally speaking, the higher
+the value, the higher the permissions it grants.</p>
+<p>Every DML message may have an access level value specified as a minimum threshold that
+must be met in order for a peer to be allowed to process the data.</p>
+<p>A non-exhaustive list of known values and their meanings is:</p>
+<table><thead><tr><th>Value</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>0</code></td><td>No special requirements; can be used anytime</td></tr>
+<tr><td><code>1</code></td><td>A valid session must be established in order to process the message</td></tr>
+</tbody></table>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="kiwad-archives"><a class="header" href="#kiwad-archives">KIWAD Archives</a></h1>
+<p>The &quot;KingsIsle Where's All the Data?&quot; format (name guessed) is a custom file format used by the
+game to bundle all kinds of game assets in archives. The format presumably draws inspiration from
+<a href="https://doomwiki.org/wiki/WAD#Header">the original Doom WAD format</a> and similarly uses <code>.wad</code> as
+file extension.</p>
+<p>Archives consist of a <a href="internals/kiwad.html#header">header</a>, followed by the <a href="internals/kiwad.html#file-table">file table</a>, and lastly
+the encoded file data as described in the table. All data is assumed to be encoded in little-endian
+byteorder unless stated otherwise.</p>
+<h2 id="header-2"><a class="header" href="#header-2">Header</a></h2>
+<p>The header may consume 13 or 14 bytes in size and outlines the amount of files to expect in
+the archive:</p>
+<table><thead><tr><th>Offset</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>0x0</td><td>string</td><td><code>&quot;KIWAD&quot;</code> as an ASCII string</td></tr>
+<tr><td>0x5</td><td>uint32</td><td>The KIWAD version that is used</td></tr>
+<tr><td>0x9</td><td>uint32</td><td>An integer holding the amount of files in the archive</td></tr>
+<tr><td>0xD</td><td>uint8</td><td>optional; <a href="internals/kiwad.html#flags">WAD Flags</a> if version &gt;= <code>2</code></td></tr>
+</tbody></table>
+<h3 id="flags-2"><a class="header" href="#flags-2">Flags</a></h3>
+<p>On file format versions &gt;= 2, the header encodes a mask of configuration bits which should be
+treated as implementation-defined for the most parts; KIWAD implementations can safely ignore
+these bit flags and always write <code>0</code>.</p>
+<p>This is how the official client uses them:</p>
+<table><thead><tr><th>Bit</th><th>Name</th></tr></thead><tbody>
+<tr><td>0</td><td>Memory-maps the file view</td></tr>
+<tr><td>1</td><td>Prefetches the file handle</td></tr>
+</tbody></table>
+<h2 id="file-table"><a class="header" href="#file-table">File table</a></h2>
+<p>This table consists of <code>n</code> repetitions of the <a href="internals/kiwad.html#file">file</a> structure, where <code>n</code> is the number
+of archived files as encoded in the <a href="internals/kiwad.html#header">header</a>.</p>
+<h2 id="file"><a class="header" href="#file">File</a></h2>
+<p>This structure denotes the metadata of an encoded file, needed for extraction and validation:</p>
+<table><thead><tr><th>Offset</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>0x0</td><td>uint32</td><td>The start offset of the file data in the archive</td></tr>
+<tr><td>0x4</td><td>uint32</td><td>The size of the <a href="internals/kiwad.html#compression">uncompressed</a> file in bytes</td></tr>
+<tr><td>0x8</td><td>int32</td><td>The size of the <a href="internals/kiwad.html#compression">compressed</a> file in bytes</td></tr>
+<tr><td>0xC</td><td>bool</td><td>Whether the encoded file data is compressed</td></tr>
+<tr><td>0xD</td><td>uint32</td><td>The <a href="internals/kiwad.html#checksums">checksum</a> of the file data</td></tr>
+<tr><td>0x11</td><td>uint32</td><td>The length of the file's path in the archive in bytes</td></tr>
+<tr><td>0x15</td><td>char[]</td><td>The archive file name as a null-terminated string</td></tr>
+</tbody></table>
+<h3 id="compression"><a class="header" href="#compression">Compression</a></h3>
+<p>If a file is compressed, the corresponding file table entry encodes its uncompressed size
+and the compressed size and the data will run through <a href="https://zlib.net">zlib</a>.</p>
+<p>If a file is stored uncompressed, <code>-1</code> (or <code>0xFFFF_FFFF</code>) will be written for its
+compressed size.</p>
+<p>Notably, only <code>.mp3</code> and <code>.ogg</code> files are shipped uncompressed in official archives
+by KingsIsle.</p>
+<h3 id="checksums"><a class="header" href="#checksums">Checksums</a></h3>
+<p>The checksum of a file is calculated by CRC32 using the polynomial <code>0x4C11DB7</code> and
+reversed input and output values:</p>
+<pre><code class="language-python">import crcengine
+
+crc32 = crcengine.create(0x04C11DB7, 32, 0, xor_out=0)
+
+assert crc32(b&quot;KIWAD&quot;) == 4265429514
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+    </body>
+</html>

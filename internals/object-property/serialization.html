@@ -1,0 +1,392 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Serialization - The Kronos Grimoire</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="A deep dive into the game&#x27;s internals and the Kronos project orchestration">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../../foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="../../internals/args.html"><strong aria-hidden="true">1.</strong> Graphical Client Arguments</a></li><li class="chapter-item expanded "><a href="../../internals/string-id.html"><strong aria-hidden="true">2.</strong> String IDs</a></li><li class="chapter-item expanded "><a href="../../internals/dml/index.html"><strong aria-hidden="true">3.</strong> Data Markup Language</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../internals/dml/protocols.html"><strong aria-hidden="true">3.1.</strong> Protocols</a></li><li class="chapter-item expanded "><a href="../../internals/dml/messages.html"><strong aria-hidden="true">3.2.</strong> Messages</a></li><li class="chapter-item expanded "><a href="../../internals/dml/tables.html"><strong aria-hidden="true">3.3.</strong> Tables</a></li></ol></li><li class="chapter-item expanded "><a href="../../internals/object-property/index.html"><strong aria-hidden="true">4.</strong> ObjectProperty</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../internals/object-property/property-classes.html"><strong aria-hidden="true">4.1.</strong> Property Classes</a></li><li class="chapter-item expanded "><a href="../../internals/object-property/serialization.html" class="active"><strong aria-hidden="true">4.2.</strong> Serialization</a></li></ol></li><li class="chapter-item expanded "><a href="../../internals/protocol/index.html"><strong aria-hidden="true">5.</strong> Network Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../internals/protocol/framing.html"><strong aria-hidden="true">5.1.</strong> Framing</a></li><li class="chapter-item expanded "><a href="../../internals/protocol/control.html"><strong aria-hidden="true">5.2.</strong> Control Messages</a></li><li class="chapter-item expanded "><a href="../../internals/protocol/data.html"><strong aria-hidden="true">5.3.</strong> Data Messages</a></li><li class="chapter-item expanded "><a href="../../internals/protocol/sessions.html"><strong aria-hidden="true">5.4.</strong> Sessions</a></li></ol></li><li class="chapter-item expanded "><a href="../../internals/kiwad.html"><strong aria-hidden="true">6.</strong> KIWAD Archives</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Kronos Grimoire</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://gitlab.com/vale_/kronos" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="serialization"><a class="header" href="#serialization">Serialization</a></h1>
+<p>This aims to give insight into the serialization of Property Classes.</p>
+<p>The following uses Python pseudocode for illustration which makes use of format strings
+defined by the <a href="https://docs.python.org/3/library/struct.html">struct module</a>.</p>
+<h2 id="binary"><a class="header" href="#binary">Binary</a></h2>
+<p>The binary serialization mode is commonly encountered for both local game files and also
+for <code>STR</code> types in many DML messages transferred over the network.</p>
+<h3 id="buffering"><a class="header" href="#buffering">Buffering</a></h3>
+<p>For writing the binary data, a sink with bit-oriented instead of byte-oriented buffering
+is preferred due to some types being serialized in units of single bits only.</p>
+<p>In such cases, the buffer should progress sequentially from the LSB of a byte to its MSB
+before advancing to the next one.</p>
+<p>When the binary size of a type is in units of whole bytes, the buffer will be aligned to the
+start of a full byte with bit position 0, if not already there, before writing said type.</p>
+<h3 id="flags"><a class="header" href="#flags">Flags</a></h3>
+<p>Binary serializers and deserializers may have a set of flags attached to them to customize
+their behavior:</p>
+<table><thead><tr><th>Bit</th><th>Purpose</th></tr></thead><tbody>
+<tr><td>0</td><td>Indicates that these flags should be serialized and re-used by the deserializer</td></tr>
+<tr><td>1</td><td>Tries to pack length prefixes into smaller quantities for compact serialization</td></tr>
+<tr><td>2</td><td>Causes enum variants to be serialized as human-readable strings instead of values</td></tr>
+<tr><td>3</td><td>Enables <a href="https://zlib.net">zlib</a> compression of serialized object state</td></tr>
+<tr><td>4</td><td>Properties with flag bit <code>8</code> set must always be dirty when serialized</td></tr>
+</tbody></table>
+<h3 id="header"><a class="header" href="#header">Header</a></h3>
+<p>A serialized stream starts with the necessary header data followed by the compressed or
+uncompressed object bytes:</p>
+<pre><code class="language-py">output = bytearray()
+
+# Serialize our flags value if `STATEFUL_FLAGS` (bit 0) is set.
+if serializer_flags &amp; STATEFUL_FLAGS != 0:
+    output.extend(serializer_flags.to_bytes(4, &quot;little&quot;))
+
+# Handle compression if `WITH_COMPRESSION` (bit 3) is set.
+if serializer_flags &amp; WITH_COMPRESSION != 0:
+    compressed_object_data = zlib.compress(object_data)
+
+    if len(compressed_object_data) &lt; len(object_data):
+        object_data = compressed_object_data
+
+        # Indicate that the data is compressed.
+        output.append(1)
+        # Write the size of the uncompressed object for the deserializer to validate.
+        output.extend(len(object_data).to_bytes(4, &quot;little&quot;))
+    else:
+        # Indicate that the data is uncompressed.
+        output.append(0)
+
+# Write either the compressed or uncompressed data.
+output.extend(object_data)
+</code></pre>
+<h3 id="objects-and-properties"><a class="header" href="#objects-and-properties">Objects and Properties</a></h3>
+<p>The serialization system deals with whole <code>PropertyClass</code>es at any time. No loose values
+anywhere.</p>
+<p>A serializer accepts the following inputs to customize its behavior:</p>
+<ul>
+<li>
+<p>a <a href="#flags">mask of serializer flags</a> for configuration</p>
+</li>
+<li>
+<p>a boolean denoting whether the output will be <em>shallow</em> or <em>deep</em></p>
+</li>
+<li>
+<p>a wildcard of property flag bits to only serialize those properties where that mask is
+an intersection of the actual flags</p>
+</li>
+</ul>
+<h4 id="data-model"><a class="header" href="#data-model">Data model</a></h4>
+<p>The <em>ObjectProperty</em> data model defines what types are supported and how they are serialized.
+This may be freely extended with custom types that are implementation-defined and not
+<code>PropertyClass</code>es themselves.</p>
+<p>The following examples of serialization modes will use an imaginary <code>serialize_value</code> function
+that should be thought of as a mapping arbitrary values into this data model and serializing
+them to the <code>buffer</code> argument.</p>
+<p>Be sure to consider the buffering remarks at the start when implementing this.</p>
+<ul>
+<li>
+<p>booleans will be written as a single bit; <code>1</code> for <code>true</code> and <code>0</code> for <code>false</code></p>
+</li>
+<li>
+<p>primitive integer types (signed and unsigned) will be written as bytes in little-endian order</p>
+</li>
+<li>
+<p>floating-point numbers according to IEEE-754 are bit-copied into <code>uint32_t</code>/<code>uint64_t</code> and
+serialized as such</p>
+</li>
+<li>
+<p>strings are serialized as UTF-8 bytes with their <strong>length prefixed</strong></p>
+</li>
+<li>
+<p>wide strings are serialized as UTF-16 code points in little-endian order without BOM and with
+their <strong>length prefixed</strong></p>
+</li>
+<li>
+<p>collections, such as lists or vectors, are serialized as a sequence of element values with
+their <strong>length prefixed</strong></p>
+</li>
+<li>
+<p>tuples or arrays with a known length are serialized as just the sequence of elements</p>
+</li>
+<li>
+<p>when a property is <strong>opional</strong> (i.e. has bit 8 set in its flags set), its value may be
+skipped (unless the serializer has bit 4 set in its flags); a single bit of <code>0</code> denotes that no
+value is given, otherwise a value of <code>1</code> followed by the property's value is written</p>
+</li>
+<li>
+<p>enum variants are either serialized as their integral value or, when serializer flag bit 2 is
+set, as a string representation of the variant name</p>
+<ul>
+<li>an empty string for bit enums is equivalent to a value of <code>0</code></li>
+<li>the bit enum variant string is a list of flag names: <code>A|B|C</code></li>
+</ul>
+</li>
+<li>
+<p><strong>length prefixes</strong> are <code>uint16_t</code> for (w)strings and <code>uint32_t</code> for collections unless serializer
+bit 1 is set, which enables a common compression algorithm applied to both types - when the length
+is smaller than <code>0x80</code>, write it as <code>uint8_t</code> with the LSB set to <code>0</code>, otherwise write it as
+<code>uint32_t</code> with LSB set to <code>1</code></p>
+</li>
+</ul>
+<h4 id="type-tag"><a class="header" href="#type-tag">Type Tag</a></h4>
+<p>Every serialized <code>PropertyClass</code> state has a type tag associated with it to uniquely identify it
+during deserialization.</p>
+<p>The type tag is a <a href="../string-id.html"><strong>string ID</strong></a> of the type's name.</p>
+<h4 id="property-tag"><a class="header" href="#property-tag">Property Tag</a></h4>
+<p>Property tags uniquely identify a property within an object in <em>deep</em> serialization mode.</p>
+<p>The tag is a sum of the property type's <a href="../string-id.html"><strong>string ID</strong></a> and a slightly modified
+<a href="https://theartincode.stanis.me/008-djb2/">djb2 hash</a> of the property's name with the MSB value discarded.</p>
+<p>Practically speaking:</p>
+<pre><code class="language-py">type_tag = string_id(property.type_name)  # NOT object.type_name
+name_hash = djb2(property.name) &amp; 0x7FFF_FFFF
+
+property_tag = (type_tag + name_hash) &amp; 0xFFFF_FFFF
+</code></pre>
+<h4 id="shallow-mode"><a class="header" href="#shallow-mode">Shallow mode</a></h4>
+<p>In shallow mode, the 32-bit <a href="#type-tag">object type tag</a> is written followed by a sequence of masked
+property values in their correct order:</p>
+<pre><code class="language-py">buffer = BinaryBuffer()
+
+buffer.write(&quot;&lt;I&quot;, object.type_hash)
+for property in filter(lambda p: p.flags &amp; mask == mask, object.properties):
+    serialize_value(buffer, property.value)
+</code></pre>
+<p>This mode is <strong>not</strong> allowed to skip properties with the <code>DEPRECATED</code> (bit 6) flag set, as
+a correct order of values is the only indicator that exists to correctly reconstruct the
+object during deserialization.</p>
+<h4 id="deep-mode"><a class="header" href="#deep-mode">Deep mode</a></h4>
+<p>In deep mode, the concept is a bit different. Here, the 32-bit <a href="#type-tag">object type tag</a>
+is serialized, followed by a mapping of <a href="#property-tag">property tags</a> to their values.
+Additionally, size information in bits is written for integrity validation.</p>
+<p>In practice, this looks like this:</p>
+<pre><code class="language-py">buffer = BitBuffer()
+
+buffer.write(&quot;&lt;I&quot;, object.type_hash)
+
+# Reserve a placeholder for the object size.
+object_size_position = len(buffer)
+buffer.write(&quot;&lt;I&quot;, 0)
+
+# Here we don't only skip unmasked properties, but also deprecated ones.
+for property in filter(
+    lambda p: p.flags &amp; mask == mask and p.flags &amp; FLAG_DEPRECATED == 0, object.properties
+):
+    # Reserve a placeholder for the property size.
+    property_size_position = len(buffer)
+    buffer.write(&quot;&lt;I&quot;, 0)  # Will be replaced by a real size later.
+
+    # Write the mapping of property hash to value.
+    buffer.write(&quot;&lt;I&quot;, property.hash)
+    serialize_value(buffer, property.value)
+
+    # Patch back the real property size.
+    buffer.seek_bit(property_size_position)
+    buffer.write(&quot;&lt;I&quot;, len(buffer) - property_size_position)
+
+# Patch back the real object size.
+buffer.seek_bit(object_size_position)
+buffer.write(&quot;&lt;I&quot;, len(buffer) - object_size_position)
+</code></pre>
+<p>The order of property entries, while usually maintained, is not as important as it is for
+<strong>shallow</strong> serialization.</p>
+<h2 id="files"><a class="header" href="#files">Files</a></h2>
+<p>When serializing to files, a common convention is to use an <code>.xml</code> suffix. This orignates
+from different ways of representing the serialized data inside them.</p>
+<p>For debugging purposes, a human-readable format is often desired. It is very straightforward
+and can be fully explained in a short example:</p>
+<pre><code class="language-xml">&lt;Objects&gt;
+  &lt;Class Name=&quot;class Example&quot;&gt;
+    &lt;!-- We place a tag for every property and its value as the tag's content. --&gt;
+    &lt;m_someString&gt;Test&lt;/m_someString&gt;
+    &lt;m_someInt&gt;1337&lt;/m_someInt&gt;
+    &lt;m_someObject&gt;
+      &lt;Class Name=&quot;class SomeObject&quot;&gt;
+        &lt;m_test&gt;Properties holding objects will hold a nested Class element&lt;/m_test&gt;
+      &lt;/Class&gt;
+    &lt;/m_someObject&gt;
+    &lt;m_someTuple&gt;1,0,0,1&lt;/m_someTuple&gt;
+
+    &lt;!-- This is how we serialize properties holding container values. --&gt;
+    &lt;m_listOfStrings&gt;A&lt;/m_listOfStrings&gt; &lt;!-- Index 0 --&gt;
+    &lt;m_listOfStrings&gt;B&lt;/m_listOfStrings&gt; &lt;!-- Index 1 --&gt;
+    &lt;m_listOfStrings&gt;C&lt;/m_listOfStrings&gt; &lt;!-- Index 2 --&gt;
+  &lt;/Class&gt;
+&lt;/Objects&gt;
+</code></pre>
+<p>When distributing game data, specifically data that is not meant to be edited afterwards,
+a more compact format is often preferred. This is
+<a href="#objects-and-properties">exhaustive binary serialization</a> with a special file magic:</p>
+<pre><code class="language-py">FILE_MAGIC = 0x644E4942  # b&quot;BINd&quot; in little-endian byteorder
+
+buffer.write(&quot;&lt;I&quot;, FILE_MAGIC)
+buffer.extend(serialized_object_state)
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../internals/object-property/property-classes.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="../../internals/protocol/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../internals/object-property/property-classes.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="../../internals/protocol/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>
