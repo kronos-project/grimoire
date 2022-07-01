@@ -76,7 +76,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="internals/args.html"><strong aria-hidden="true">1.</strong> Graphical Client Arguments</a></li><li class="chapter-item expanded "><a href="internals/string-id.html"><strong aria-hidden="true">2.</strong> String IDs</a></li><li class="chapter-item expanded "><a href="internals/dml/index.html"><strong aria-hidden="true">3.</strong> Data Markup Language</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="internals/dml/protocols.html"><strong aria-hidden="true">3.1.</strong> Protocols</a></li><li class="chapter-item expanded "><a href="internals/dml/messages.html"><strong aria-hidden="true">3.2.</strong> Messages</a></li><li class="chapter-item expanded "><a href="internals/dml/tables.html"><strong aria-hidden="true">3.3.</strong> Tables</a></li></ol></li><li class="chapter-item expanded "><a href="internals/object-property/index.html"><strong aria-hidden="true">4.</strong> ObjectProperty</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="internals/object-property/property-classes.html"><strong aria-hidden="true">4.1.</strong> Property Classes</a></li><li class="chapter-item expanded "><a href="internals/object-property/serialization.html"><strong aria-hidden="true">4.2.</strong> Serialization</a></li></ol></li><li class="chapter-item expanded "><a href="internals/protocol/index.html"><strong aria-hidden="true">5.</strong> Network Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="internals/protocol/framing.html"><strong aria-hidden="true">5.1.</strong> Framing</a></li><li class="chapter-item expanded "><a href="internals/protocol/control.html"><strong aria-hidden="true">5.2.</strong> Control Messages</a></li><li class="chapter-item expanded "><a href="internals/protocol/data.html"><strong aria-hidden="true">5.3.</strong> Data Messages</a></li><li class="chapter-item expanded "><a href="internals/protocol/sessions.html"><strong aria-hidden="true">5.4.</strong> Sessions</a></li></ol></li><li class="chapter-item expanded "><a href="internals/kiwad.html"><strong aria-hidden="true">6.</strong> KIWAD Archives</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="internals/args.html"><strong aria-hidden="true">1.</strong> Graphical Client Arguments</a></li><li class="chapter-item expanded "><a href="internals/string-id.html"><strong aria-hidden="true">2.</strong> String IDs</a></li><li class="chapter-item expanded "><a href="internals/dml/index.html"><strong aria-hidden="true">3.</strong> Data Markup Language</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="internals/dml/protocols.html"><strong aria-hidden="true">3.1.</strong> Protocols</a></li><li class="chapter-item expanded "><a href="internals/dml/messages.html"><strong aria-hidden="true">3.2.</strong> Messages</a></li><li class="chapter-item expanded "><a href="internals/dml/tables.html"><strong aria-hidden="true">3.3.</strong> Tables</a></li></ol></li><li class="chapter-item expanded "><a href="internals/object-property/index.html"><strong aria-hidden="true">4.</strong> ObjectProperty</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="internals/object-property/property-classes.html"><strong aria-hidden="true">4.1.</strong> Property Classes</a></li><li class="chapter-item expanded "><a href="internals/object-property/serialization.html"><strong aria-hidden="true">4.2.</strong> Serialization</a></li></ol></li><li class="chapter-item expanded "><a href="internals/protocol/index.html"><strong aria-hidden="true">5.</strong> Network Protocol</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="internals/protocol/framing.html"><strong aria-hidden="true">5.1.</strong> Framing</a></li><li class="chapter-item expanded "><a href="internals/protocol/control.html"><strong aria-hidden="true">5.2.</strong> Control Messages</a></li><li class="chapter-item expanded "><a href="internals/protocol/data.html"><strong aria-hidden="true">5.3.</strong> Data Messages</a></li><li class="chapter-item expanded "><a href="internals/protocol/sessions.html"><strong aria-hidden="true">5.4.</strong> Sessions</a></li></ol></li><li class="chapter-item expanded "><a href="internals/kiwad.html"><strong aria-hidden="true">6.</strong> KIWAD Archives</a></li><li class="chapter-item expanded "><a href="internals/login-server/index.html"><strong aria-hidden="true">7.</strong> Login Server</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="internals/login-server/groundwork.html"><strong aria-hidden="true">7.1.</strong> Groundwork</a></li><li class="chapter-item expanded "><a href="internals/login-server/auth.html"><strong aria-hidden="true">7.2.</strong> Authentication</a></li><li class="chapter-item expanded "><a href="internals/login-server/transition.html"><strong aria-hidden="true">7.3.</strong> Game Transition</a></li><li class="chapter-item expanded "><a href="internals/login-server/chars.html"><strong aria-hidden="true">7.4.</strong> Character Management</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -436,6 +436,8 @@ classes.</p>
 <p>It was initially written by <a href="https://github.com/rlyle">Richard Lyle</a> as part of the
 <a href="https://github.com/palestar/medusa">Medusa project</a> (see <code>Reflection</code> directory) and
 was later ported into KI's codebase with additional features and improvements.</p>
+<p>The <a href="https://github.com/Starrfox/wizwalker.git">wizwalker</a> project's type dumper
+utility may be used to obtain a full list of all reflected types from the game.</p>
 <ul>
 <li>
 <p><a href="internals/object-property/./property-classes.html">Property Classes</a></p>
@@ -1048,6 +1050,316 @@ crc32 = crcengine.create(0x04C11DB7, 32, 0, xor_out=0)
 
 assert crc32(b&quot;KIWAD&quot;) == 4265429514
 </code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="login-server"><a class="header" href="#login-server">Login Server</a></h1>
+<p>This chapter describes the architecture and functionality of the
+<em>Login Server</em>.</p>
+<p>Its purpose is to authenticate players, perform <em>Game Server</em> load
+balancing, and manage in-game characters for the account.</p>
+<p>The primary data exchange protocol is described in <a href="internals/login-server/../dml/protocols.html">DML</a>
+as <code>LoginMessages.xml</code>, Service ID <code>7</code>. It is recommended to keep
+this open for reference while reading through the following pages.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="groundwork"><a class="header" href="#groundwork">Groundwork</a></h1>
+<p>This discusses the foundations and prerequirements for a Login Server
+implementation without going into detail on concrete functionality yet.</p>
+<h2 id="client-connectivity"><a class="header" href="#client-connectivity">Client Connectivity</a></h2>
+<p>In practical terms, the timeframe of communication between game client and
+<em>Login Server</em> starts with opening the Patch Client/WizardGraphicalClient
+and ends when hitting the <strong>Play</strong> button in character selection.</p>
+<p>The Patch Server will source the server IP and port from <code>PatchConfig.xml</code>
+and forward the information to the WizardGraphicalClient via the <code>-L</code> CLI
+argument.</p>
+<blockquote>
+<p>When trying to make the Patch Client connect to a custom Login Server, it
+is mandatory to bypass KingsIsle's <em>Patch Server</em> or the <code>PatchConfig.xml</code>
+change will be reverted before being able to make it into the game.</p>
+</blockquote>
+<h2 id="secondary-message-protocols"><a class="header" href="#secondary-message-protocols">Secondary Message Protocols</a></h2>
+<p>The Login Server fundamentally needs to support some basic functionality
+aside from its primary <code>LoginMessages</code> protocol.</p>
+<h3 id="pings"><a class="header" href="#pings">Pings</a></h3>
+<p>Every so often, the client may send <code>MSG_PING</code> from <code>BaseMessages.xml</code>
+(Service ID <code>1</code>) to the server to check its responsiveness. The server
+should respond with <code>MSG_PING_RSP</code> from the same protocol upon receiving.
+Both these messages don't carry any data payloads.</p>
+<h3 id="client-disconnection"><a class="header" href="#client-disconnection">Client Disconnection</a></h3>
+<p>When clients shut down gracefully, they send <code>MSG_CLIENT_DISCONNECT</code> from
+<code>GameMessages.xml</code> (Service ID <code>5</code>). In such an event, the server should
+close the open client connection and free up occupied resources.</p>
+<p>Note that a variety of problems on the user end can summon unexpected
+connection aborts. The implementation should still detect these events and
+free up its resources accordingly.</p>
+<h2 id="client-sessions"><a class="header" href="#client-sessions">Client Sessions</a></h2>
+<p>When a client initially connects to the <em>Login Server</em>, a new <a href="internals/login-server/../protocol/sessions.html">session</a>
+must be established before being able to process any <code>LoginMessages</code> messages.</p>
+<p>The server implementation should cache <strong>Session ID</strong> and <strong>Session Offer timestamp</strong>
+per client as they will be needed later.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="authentication"><a class="header" href="#authentication">Authentication</a></h1>
+<p>With a valid session established, users will enter their usernames and passwords
+and hit the <strong>Login</strong> button in order to have their identity verified and giving
+them access to the stored game data associated with their account.</p>
+<p>This is done through the <code>MSG_USER_AUTHEN_V3</code> request that will be crafted and
+sent by clients.</p>
+<h2 id="clientkey1"><a class="header" href="#clientkey1">ClientKey1</a></h2>
+<p>ClientKey1, commonly abbreviated as CK1, is a string generated by the client
+as a hash of the user's password tied to the current session to avoid data replay
+from captured authentication requests.</p>
+<p>The algorithm goes as follows, with <strong>password</strong> being the user's plaintext
+password input, <strong>sid</strong> being the cached Session ID for the connection, <strong>time_secs</strong>
+and <strong>time_millis</strong> being seconds since epoch and subsecond millis extracted from
+the cached Session Offer timestamp, respectively:</p>
+<pre><code class="language-py">from base64 import b64encode as base64
+from hashlib import sha512
+
+# Produce a base64-encoded SHA512 hash of the password and hash that again.
+state = sha512(base64(sha512(password).digest()))
+# Mix in salt built from previously cached session information.
+state.update(f&quot;{sid}{time_secs}{time_millis}&quot;)
+
+# Receive CK1 as the base64-encoded hash of *password hash* and *salt*.
+clientkey1 = base64(state.digest())
+</code></pre>
+<h2 id="rec1-serverbound"><a class="header" href="#rec1-serverbound">REC1 (serverbound)</a></h2>
+<p><code>REC1</code> is a field in the aforementioned <code>MSG_USER_AUTHEN_V3</code> data message that
+holds the user's credentials for validation by the server.</p>
+<p>The actual data there is encrypted with <a href="https://en.wikipedia.org/wiki/Twofish">Twofish</a>
+in <a href="https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Output_feedback_(OFB)">OFB</a> mode.</p>
+<p>The logic used to derive Twofish keys and IVs for this operation is:</p>
+<pre><code class="language-go">func generateIV() []byte {
+    const ivConstant = 0xB6
+
+    iv := make([]byte, 16)
+    for i := 0; i &lt; len(iv); i++ {
+        iv[i] = ivConstant - byte(i)
+    }
+
+    return iv
+}
+
+func generateKey(sid uint16, timeSecs uint32, timeMillis uint32) []byte {
+    const keyConstant = 0x17
+
+    key := make([]byte, 32)
+    for i := 0; i &lt; len(key); i++ {
+        key[i] = keyConstant + byte(i)
+    }
+
+    le := make([]byte, 4)
+
+    binary.LittleEndian.PutUint16(le, sid)
+    key[4] = le[0]
+    key[5] = le[2] // This is always zero
+    key[6] = le[1]
+
+    binary.LittleEndian.PutUint32(le, timeSecs)
+    key[8] = le[0]
+    key[9] = le[2]
+    key[12] = le[1]
+    key[13] = le[3]
+
+    binary.LittleEndian.PutUint32(le, timeMillis)
+    key[14] = le[0]
+    key[15] = le[1]
+
+    return key
+}
+</code></pre>
+<p>With this at hand, the actual Record can be built and encrypted:</p>
+<pre><code class="language-go">func buildRecord1(username string, ck1 string, sid uint16, timeSecs uint32, timeMillis uint32) []byte {
+    key := generateKey(sid, timeSecs, timeMillis)
+    iv := generateIV()
+
+    // Prepare the Twofish OFB context for later encryption
+    cipher, _ := twofish.NewCipher(key)
+    stream := cipher.NewOFB(cipher, iv)
+
+    // Build the plaintext Record we would like to send
+    record := fmt.Sprintf(&quot;%v %v %v&quot;, sid, username, ck1)
+
+    // Encrypt and return the record
+    stream.XORKeyStream(record, record)
+    return record
+}
+</code></pre>
+<p>Servers will need to decrypt the received record, split the plaintext at whitespace and
+parse it as <code>Session ID, Username, ClientKey1</code> which can be accordingly validated
+by deriving the CK1 for the password hash stored along with the username. The
+SID is a neglectible asset here as the session integrity is already validated
+with CK1.</p>
+<h2 id="rec1-clientbound"><a class="header" href="#rec1-clientbound">REC1 (clientbound)</a></h2>
+<p>After successful validation of an authentication request, the server is expected
+to respond with a <code>MSG_USER_AUTHEN_RSP</code> message.</p>
+<p>This contains the unique <code>UserID</code> for the account, a <code>PayingUser</code> boolean denoting
+whether the account has active membership, and yet another <code>Rec1</code> string.</p>
+<p>It is Twofish OFB encrypted as well and uses the same keys and IVs as showcased
+above. Clients should use the same logic for decrypting that string.</p>
+<p>The Record is yet another base64-encoded string of 64 bytes, referred to as ClientKey2.
+The exact algorithm in use on KI's serverside remains unknown.</p>
+<p>Note that ClientKey2 is, in itself, a secret value. It is session-agnostic and
+the mere knowledge of it is proof of identity to the server that will
+be validated when entering the game. Implementors are encouraged to use a suitable
+<a href="https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator">CSPRNG</a>
+to generate random data and invalidate actively cached CK2s in fixed intervals,
+forcing users to re-authenticate.</p>
+<p>When everything went smoothly, WizardGraphicalClient will be launced with the
+<a href="internals/login-server/../args.html"><code>-U</code> flag</a>.</p>
+<h2 id="errors"><a class="header" href="#errors">Errors</a></h2>
+<p>Many different errors can occur during authentication. For that purpose, <code>MSG_USER_AUTHEN_RSP</code>
+features an <code>Error</code> field which holds a <a href="internals/login-server/../string-id.html">String ID</a>.</p>
+<p>Below is a non-exhaustive list of known codes and when they should be sent:</p>
+<table><thead><tr><th>String</th><th>When to send</th></tr></thead><tbody>
+<tr><td><code>&quot;&quot;</code></td><td>No error</td></tr>
+<tr><td><code>&quot;AccountBanned&quot;</code></td><td>User's account is banned</td></tr>
+<tr><td><code>&quot;MachineBanned&quot;</code></td><td>User's machine is banned</td></tr>
+<tr><td><code>&quot;AuthenFailed&quot;</code></td><td>Invalid credentials or internal server error</td></tr>
+<tr><td><code>&quot;AISNoLogin&quot;</code></td><td>Chinese Anti-Indulgence System (legacy)</td></tr>
+<tr><td><code>&quot;Timeout&quot;</code></td><td>Timeout while trying to process the request</td></tr>
+<tr><td><code>&quot;FtpCapped&quot;</code></td><td>???</td></tr>
+<tr><td><code>&quot;ErrorNoLock&quot;</code></td><td>???</td></tr>
+<tr><td><code>&quot;FailedUpload&quot;</code></td><td>???</td></tr>
+</tbody></table>
+<h2 id="legacy-authen"><a class="header" href="#legacy-authen">Legacy Authen</a></h2>
+<p>The login protocol also features <code>MSG_USER_AUTHEN</code> and <code>MSG_USER_AUTHEN_V2</code>. They are
+no longer supported and server implementations must ignore these requests.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="game-transition"><a class="header" href="#game-transition">Game Transition</a></h1>
+<p>This is a continuation of the <a href="internals/login-server/./auth.html">Authentication Chapter</a>.</p>
+<p>After successful exchange of <code>MSG_USER_AUTHEN_V3</code> and <code>MSG_USER_AUTHEN_RSP</code>
+messages, the graphical client is now up and running in posession of the
+player's <code>UserID</code>, username and <code>ClientKey2</code>.</p>
+<p>The next step is the transition from Patch Client to WizardGraphicalClient.</p>
+<h2 id="passkey3"><a class="header" href="#passkey3">PassKey3</a></h2>
+<p>PassKey3, or PK3, is derived from ClientKey2 by the client and will be sent
+to the server. It uses the same algorithm as <a href="internals/login-server/./auth.html#clientkey1">ClientKey1</a>:</p>
+<pre><code class="language-py">from base64 import b64encode as base64
+from hashlib import sha512
+
+# Feed ClientKey2 into the hasher.
+state = sha512(clientkey2)
+# Mix in salt built from currently cached session information.
+# NOTE: These may NOT be the same values which were used for authentication.
+state.update(f&quot;{sid}{time_secs}{time_millis}&quot;)
+
+# Receive PK3 as the base64-encoded hash of *ClientKey2* and *salt*.
+passkey3 = base64(state.digest())
+</code></pre>
+<h2 id="identity-validation"><a class="header" href="#identity-validation">Identity Validation</a></h2>
+<h3 id="request"><a class="header" href="#request">Request</a></h3>
+<p>The game client first sends <code>MSG_USER_VALIDATE</code> with the previously obtained
+<code>UserID</code> and <code>PassKey3</code>.</p>
+<p>The same <code>MachineID</code> and <code>PatchClientID</code> that were already used in
+<code>MSG_USER_AUTHEN_V3</code> should be sent to reduce the possibility of account theft
+if machines were switched in-between authentication and validation.</p>
+<h3 id="response"><a class="header" href="#response">Response</a></h3>
+<p>The server is then supposed to respond with <code>MSG_USER_VALIDATE_RSP</code>. This once
+again contains an echo of the <code>UserID</code>, <code>PayingUser</code> and a potential error code.</p>
+<h3 id="errors-1"><a class="header" href="#errors-1">Errors</a></h3>
+<p>The error codes are once again <a href="internals/login-server/../string-id.html">string IDs</a> with known values
+listed below:</p>
+<table><thead><tr><th>String</th><th>When to send</th></tr></thead><tbody>
+<tr><td><code>&quot;&quot;</code></td><td>No error</td></tr>
+<tr><td><code>&quot;AccountBanned&quot;</code></td><td>User's account is banned</td></tr>
+<tr><td><code>&quot;MachineBanned&quot;</code></td><td>User's machine is banned</td></tr>
+<tr><td><code>&quot;ValidateFailed&quot;</code></td><td>Invalid PK3 for user or internal server error</td></tr>
+<tr><td><code>&quot;Timeout&quot;</code></td><td>Timeout while trying to process the request</td></tr>
+<tr><td><code>&quot;FtpCapped&quot;</code></td><td>???</td></tr>
+<tr><td><code>&quot;ErrorNoLock&quot;</code></td><td>???</td></tr>
+<tr><td><code>&quot;FailedUpload&quot;</code></td><td>???</td></tr>
+</tbody></table>
+<h2 id="load-balancing"><a class="header" href="#load-balancing">Load Balancing</a></h2>
+<h3 id="busy-queue"><a class="header" href="#busy-queue">Busy Queue</a></h3>
+<p>Immediately after <code>MSG_USER_VALIDATE_RSP</code>, the server is expected to follow up
+with <code>MSG_USER_ADMIT_IND</code>.</p>
+<p>This is a load balancing mechanism with the <em>Game Server</em> to ensure not too many
+users are trying to enter the game at the same time.</p>
+<p>The server is expected to maintain a FIFO queue of users trying to enter the game
+and admit them one at a time when the server can currently handle the load.</p>
+<p>When the queue position of users changes, they are supposed to be informed with
+<code>MSG_USER_ADMIT_IND</code> every time. The user that was removed from the queue is
+position <code>0</code>.</p>
+<h4 id="status"><a class="header" href="#status">Status</a></h4>
+<table><thead><tr><th>Value</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>1</code></td><td>Success</td></tr>
+</tbody></table>
+<h3 id="afk-handling"><a class="header" href="#afk-handling">Afk Handling</a></h3>
+<p>The server is expected to kick AFK players at fixed intervals to prevent them from
+taking up server resources unnecessarily.</p>
+<p>Each time the player clicks a button in the WizardGraphicalClient, a
+<code>MSG_LOGIN_NOT_AFK</code> message should be sent to reset the kick interval for the
+current connection.</p>
+<p>When the interval expires, the server should free all resources, send a
+user-facing notification, and close the connection.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="character-management"><a class="header" href="#character-management">Character Management</a></h1>
+<p>After successful authentication, validation and admission
+to the game, players will gain access to the
+character management scene.</p>
+<h2 id="wizardcharactercreationinfo"><a class="header" href="#wizardcharactercreationinfo">WizardCharacterCreationInfo</a></h2>
+<p><code>WizardCharacterCreationInfo</code> is a <a href="internals/login-server/../object-property/property-classes.html"><code>PropertyClass</code></a>
+used to represent character data throughout early character selection.</p>
+<p><code>m_schoolOfFocus</code> is a <a href="internals/login-server/../string-id.html">string ID</a> of the school's literal name
+and <code>m_nameIndices</code> is a concatenations of three bytes for each index with the
+MSB always being <code>0</code>. Everything else is self-explanatory.</p>
+<h2 id="requesting-the-list"><a class="header" href="#requesting-the-list">Requesting the List</a></h2>
+<p>The Character List must be directly requested from
+the server when initially entering the game but also
+when altering it, e.g. creating new characters.</p>
+<p>The client sends the empty <code>MSG_REQUESTCHARACTERLIST</code>
+for that.</p>
+<p>The server then follows up with <code>MSG_STARTCHARACTERLIST</code> holding a human-readable
+name of the <em>Login Server</em> instance and the number
+of additionally purchased character slots (to the default 6).</p>
+<p>Next, <code>MSG_CHARACTERINFO</code> will be sent a finite number of times for each character
+there is to this account. It carries a serialized <a href="internals/login-server/chars.html#wizardcharactercreationinfo"><code>WizardCharacterCreationInfo</code></a>
+object.</p>
+<p>Finally, the sequence will be terminated with <code>MSG_CHARACTERLIST</code> holding an error
+code of <code>0</code> (empty string id). This message may be sent prematurely if an error
+occurs while still trying to stream the Character List.</p>
+<h2 id="creating-new-characters"><a class="header" href="#creating-new-characters">Creating new Characters</a></h2>
+<p>The client sends <code>MSG_CREATE_CHARACTER</code> with the serialized
+<a href="internals/login-server/chars.html#wizardcharactercreationinfo"><code>WizardCharacterCreationInfo</code></a> object.</p>
+<p>The server then responds with <code>MSG_CREATE_CHARACTER_RESPONSE</code>, potentially holding
+an error or empty <a href="internals/login-server/../string-id.html">string ID</a> on success.</p>
+<p>Errors may occur when the creation info object is malformed or the character
+limit for the account is exhausted.</p>
+<blockquote>
+<p>TODO: Brute force string for <code>1745079928</code>.</p>
+</blockquote>
+<h3 id="creation-logs"><a class="header" href="#creation-logs">Creation Logs</a></h3>
+<p>The client logs various stages of the character creation. The following explains
+the <code>Stage</code>s and <code>Parameter</code>s in use there.</p>
+<table><thead><tr><th>Stage</th><th>Description</th><th>Parameter</th></tr></thead><tbody>
+<tr><td><code>0</code></td><td>Prologue</td><td><code>0</code> (nothing)</td></tr>
+<tr><td><code>1</code></td><td>Consulting Book of Secrets</td><td><code>0</code> (nothing)</td></tr>
+<tr><td><code>2</code></td><td>School chosen arbitrarily</td><td>School ID</td></tr>
+<tr><td><code>3</code></td><td>School assigned by Book</td><td>School ID</td></tr>
+<tr><td><code>4</code></td><td>Default appearance taken</td><td>Template ID</td></tr>
+<tr><td><code>5</code></td><td>Custom appearance chosen</td><td>Template ID</td></tr>
+<tr><td><code>6</code></td><td>Choosing a name</td><td><code>0</code> (nothing)</td></tr>
+</tbody></table>
+<h4 id="school-id"><a class="header" href="#school-id">School ID</a></h4>
+<table><thead><tr><th>Value</th><th>School</th></tr></thead><tbody>
+<tr><td><code>0</code></td><td>Fire</td></tr>
+<tr><td><code>1</code></td><td>Ice</td></tr>
+<tr><td><code>2</code></td><td>Storm</td></tr>
+<tr><td><code>3</code></td><td>Myth</td></tr>
+<tr><td><code>4</code></td><td>Life</td></tr>
+<tr><td><code>5</code></td><td>Death</td></tr>
+<tr><td><code>6</code></td><td>Balance</td></tr>
+</tbody></table>
+<h2 id="deleting-a-character"><a class="header" href="#deleting-a-character">Deleting a Character</a></h2>
+<p>The client sends <code>MSG_DELETE_CHARACTER</code> with the unique <code>CharID</code> of the character.</p>
+<p>The server is expected to respond with <code>MSG_DELETE_CHARACTER_RESPONSE</code>, potentially
+holding an error or empty <a href="internals/login-server/../string-id.html">string ID</a> on success.</p>
+<p>Errors may occur when <code>CharID</code> does not exist or references a character that does
+not belong to the currently authenticated account.</p>
+<h2 id="entering-the-game"><a class="header" href="#entering-the-game">Entering the Game</a></h2>
+<p>When the player selected its character of choice and hits <strong>Play</strong>, the client
+will send <code>MSG_SELECTCHARACTER</code> with the selected character ID.</p>
+<p>The server will then confirm the selection with <code>MSG_CHARACTERSELECTED</code> with IP
+and port of the <em>Game Server</em>, a random Key that will be sent back for validation
+later, player and char IDs, the current zone and position, and a potential error.</p>
+<p>New Wizards start at <code>WizardCity/Tutorial_Exterior</code>, with zone ID <code>191965934121493239</code>
+and location <code>&quot;START&quot;</code>.</p>
+<p>From this point onwards, the <em>Login Server</em> connection is closed and all client
+communication will happen through the <em>Game Server</em>.</p>
 
                     </main>
 
