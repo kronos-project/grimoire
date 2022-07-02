@@ -164,7 +164,8 @@ passkey3 = base64(state.digest())
 <code>UserID</code> and <code>PassKey3</code>.</p>
 <p>The same <code>MachineID</code> and <code>PatchClientID</code> that were already used in
 <code>MSG_USER_AUTHEN_V3</code> should be sent to reduce the possibility of account theft
-if machines were switched in-between authentication and validation.</p>
+if machines were switched in-between authentication and validation. Servers
+should do the mandatory checks.</p>
 <h3 id="response"><a class="header" href="#response">Response</a></h3>
 <p>The server is then supposed to respond with <code>MSG_USER_VALIDATE_RSP</code>. This once
 again contains an echo of the <code>UserID</code>, <code>PayingUser</code> and a potential error code.</p>
@@ -189,7 +190,7 @@ with <code>MSG_USER_ADMIT_IND</code>.</p>
 users are trying to enter the game at the same time.</p>
 <p>The server is expected to maintain a FIFO queue of users trying to enter the game
 and admit them one at a time when the server can currently handle the load.</p>
-<p>When the queue position of users changes, they are supposed to be informed with
+<p>When the queue positions of users change, they are supposed to be informed with
 <code>MSG_USER_ADMIT_IND</code> every time. The user that was removed from the queue is
 position <code>0</code>.</p>
 <h4 id="status"><a class="header" href="#status">Status</a></h4>

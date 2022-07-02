@@ -144,9 +144,13 @@ character management scene.</p>
 <h2 id="wizardcharactercreationinfo"><a class="header" href="#wizardcharactercreationinfo">WizardCharacterCreationInfo</a></h2>
 <p><code>WizardCharacterCreationInfo</code> is a <a href="../object-property/property-classes.html"><code>PropertyClass</code></a>
 used to represent character data throughout early character selection.</p>
+<p>As explained in the <a href="../object-property/README.html">ObjectProperty chapter</a>, readers should
+use wizwalker to obtain a dump of all types (including this one).</p>
 <p><code>m_schoolOfFocus</code> is a <a href="../string-id.html">string ID</a> of the school's literal name
 and <code>m_nameIndices</code> is a concatenations of three bytes for each index with the
 MSB always being <code>0</code>. Everything else is self-explanatory.</p>
+<p>It is serialized with no serializer configuration flags (value <code>0</code>) and a property mask
+of <code>0x18</code>.</p>
 <h2 id="requesting-the-list"><a class="header" href="#requesting-the-list">Requesting the List</a></h2>
 <p>The Character List must be directly requested from
 the server when initially entering the game but also
@@ -173,8 +177,8 @@ limit for the account is exhausted.</p>
 <p>TODO: Brute force string for <code>1745079928</code>.</p>
 </blockquote>
 <h3 id="creation-logs"><a class="header" href="#creation-logs">Creation Logs</a></h3>
-<p>The client logs various stages of the character creation. The following explains
-the <code>Stage</code>s and <code>Parameter</code>s in use there.</p>
+<p>The client logs various stages of the character creation in <code>MSG_LOGIN_LOG_CHARACTER_CREATION</code>.
+The following explains the <code>Stage</code>s and <code>Parameter</code>s in use there.</p>
 <table><thead><tr><th>Stage</th><th>Description</th><th>Parameter</th></tr></thead><tbody>
 <tr><td><code>0</code></td><td>Prologue</td><td><code>0</code> (nothing)</td></tr>
 <tr><td><code>1</code></td><td>Consulting Book of Secrets</td><td><code>0</code> (nothing)</td></tr>

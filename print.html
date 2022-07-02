@@ -1090,13 +1090,12 @@ connection aborts. The implementation should still detect these events and
 free up its resources accordingly.</p>
 <h2 id="client-sessions"><a class="header" href="#client-sessions">Client Sessions</a></h2>
 <p>When a client initially connects to the <em>Login Server</em>, a new <a href="internals/login-server/../protocol/sessions.html">session</a>
-must be established before being able to process any <code>LoginMessages</code> messages.</p>
-<p>The server implementation should cache <strong>Session ID</strong> and <strong>Session Offer timestamp</strong>
+must be established before being able to process any <code>LoginMessages</code>.</p>
+<p>A server implementation should cache <strong>Session ID</strong> and <strong>Session Offer timestamp</strong>
 per client as they will be needed later.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="authentication"><a class="header" href="#authentication">Authentication</a></h1>
 <p>With a valid session established, users will enter their usernames and passwords
-and hit the <strong>Login</strong> button in order to have their identity verified and giving
-them access to the stored game data associated with their account.</p>
+and hit the <strong>Login</strong> button in order to have their identity verified.</p>
 <p>This is done through the <code>MSG_USER_AUTHEN_V3</code> request that will be crafted and
 sent by clients.</p>
 <h2 id="clientkey1"><a class="header" href="#clientkey1">ClientKey1</a></h2>
@@ -1120,7 +1119,7 @@ clientkey1 = base64(state.digest())
 </code></pre>
 <h2 id="rec1-serverbound"><a class="header" href="#rec1-serverbound">REC1 (serverbound)</a></h2>
 <p><code>REC1</code> is a field in the aforementioned <code>MSG_USER_AUTHEN_V3</code> data message that
-holds the user's credentials for validation by the server.</p>
+holds a record of the user's credentials.</p>
 <p>The actual data there is encrypted with <a href="https://en.wikipedia.org/wiki/Twofish">Twofish</a>
 in <a href="https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Output_feedback_(OFB)">OFB</a> mode.</p>
 <p>The logic used to derive Twofish keys and IVs for this operation is:</p>
@@ -1169,8 +1168,8 @@ func generateKey(sid uint16, timeSecs uint32, timeMillis uint32) []byte {
     iv := generateIV()
 
     // Prepare the Twofish OFB context for later encryption
-    cipher, _ := twofish.NewCipher(key)
-    stream := cipher.NewOFB(cipher, iv)
+    block, _ := twofish.NewCipher(key)
+    stream := cipher.NewOFB(block, iv)
 
     // Build the plaintext Record we would like to send
     record := fmt.Sprintf(&quot;%v %v %v&quot;, sid, username, ck1)
@@ -1182,9 +1181,7 @@ func generateKey(sid uint16, timeSecs uint32, timeMillis uint32) []byte {
 </code></pre>
 <p>Servers will need to decrypt the received record, split the plaintext at whitespace and
 parse it as <code>Session ID, Username, ClientKey1</code> which can be accordingly validated
-by deriving the CK1 for the password hash stored along with the username. The
-SID is a neglectible asset here as the session integrity is already validated
-with CK1.</p>
+by deriving the CK1 for the password hash stored along with the username.</p>
 <h2 id="rec1-clientbound"><a class="header" href="#rec1-clientbound">REC1 (clientbound)</a></h2>
 <p>After successful validation of an authentication request, the server is expected
 to respond with a <code>MSG_USER_AUTHEN_RSP</code> message.</p>
@@ -1203,7 +1200,7 @@ forcing users to re-authenticate.</p>
 <p>When everything went smoothly, WizardGraphicalClient will be launced with the
 <a href="internals/login-server/../args.html"><code>-U</code> flag</a>.</p>
 <h2 id="errors"><a class="header" href="#errors">Errors</a></h2>
-<p>Many different errors can occur during authentication. For that purpose, <code>MSG_USER_AUTHEN_RSP</code>
+<p>Many different errors may occur during authentication. For that purpose, <code>MSG_USER_AUTHEN_RSP</code>
 features an <code>Error</code> field which holds a <a href="internals/login-server/../string-id.html">String ID</a>.</p>
 <p>Below is a non-exhaustive list of known codes and when they should be sent:</p>
 <table><thead><tr><th>String</th><th>When to send</th></tr></thead><tbody>
@@ -1247,7 +1244,8 @@ passkey3 = base64(state.digest())
 <code>UserID</code> and <code>PassKey3</code>.</p>
 <p>The same <code>MachineID</code> and <code>PatchClientID</code> that were already used in
 <code>MSG_USER_AUTHEN_V3</code> should be sent to reduce the possibility of account theft
-if machines were switched in-between authentication and validation.</p>
+if machines were switched in-between authentication and validation. Servers
+should do the mandatory checks.</p>
 <h3 id="response"><a class="header" href="#response">Response</a></h3>
 <p>The server is then supposed to respond with <code>MSG_USER_VALIDATE_RSP</code>. This once
 again contains an echo of the <code>UserID</code>, <code>PayingUser</code> and a potential error code.</p>
@@ -1272,7 +1270,7 @@ with <code>MSG_USER_ADMIT_IND</code>.</p>
 users are trying to enter the game at the same time.</p>
 <p>The server is expected to maintain a FIFO queue of users trying to enter the game
 and admit them one at a time when the server can currently handle the load.</p>
-<p>When the queue position of users changes, they are supposed to be informed with
+<p>When the queue positions of users change, they are supposed to be informed with
 <code>MSG_USER_ADMIT_IND</code> every time. The user that was removed from the queue is
 position <code>0</code>.</p>
 <h4 id="status"><a class="header" href="#status">Status</a></h4>
@@ -1294,9 +1292,13 @@ character management scene.</p>
 <h2 id="wizardcharactercreationinfo"><a class="header" href="#wizardcharactercreationinfo">WizardCharacterCreationInfo</a></h2>
 <p><code>WizardCharacterCreationInfo</code> is a <a href="internals/login-server/../object-property/property-classes.html"><code>PropertyClass</code></a>
 used to represent character data throughout early character selection.</p>
+<p>As explained in the <a href="internals/login-server/../object-property/README.html">ObjectProperty chapter</a>, readers should
+use wizwalker to obtain a dump of all types (including this one).</p>
 <p><code>m_schoolOfFocus</code> is a <a href="internals/login-server/../string-id.html">string ID</a> of the school's literal name
 and <code>m_nameIndices</code> is a concatenations of three bytes for each index with the
 MSB always being <code>0</code>. Everything else is self-explanatory.</p>
+<p>It is serialized with no serializer configuration flags (value <code>0</code>) and a property mask
+of <code>0x18</code>.</p>
 <h2 id="requesting-the-list"><a class="header" href="#requesting-the-list">Requesting the List</a></h2>
 <p>The Character List must be directly requested from
 the server when initially entering the game but also
@@ -1323,8 +1325,8 @@ limit for the account is exhausted.</p>
 <p>TODO: Brute force string for <code>1745079928</code>.</p>
 </blockquote>
 <h3 id="creation-logs"><a class="header" href="#creation-logs">Creation Logs</a></h3>
-<p>The client logs various stages of the character creation. The following explains
-the <code>Stage</code>s and <code>Parameter</code>s in use there.</p>
+<p>The client logs various stages of the character creation in <code>MSG_LOGIN_LOG_CHARACTER_CREATION</code>.
+The following explains the <code>Stage</code>s and <code>Parameter</code>s in use there.</p>
 <table><thead><tr><th>Stage</th><th>Description</th><th>Parameter</th></tr></thead><tbody>
 <tr><td><code>0</code></td><td>Prologue</td><td><code>0</code> (nothing)</td></tr>
 <tr><td><code>1</code></td><td>Consulting Book of Secrets</td><td><code>0</code> (nothing)</td></tr>

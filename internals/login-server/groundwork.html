@@ -169,8 +169,8 @@ connection aborts. The implementation should still detect these events and
 free up its resources accordingly.</p>
 <h2 id="client-sessions"><a class="header" href="#client-sessions">Client Sessions</a></h2>
 <p>When a client initially connects to the <em>Login Server</em>, a new <a href="../protocol/sessions.html">session</a>
-must be established before being able to process any <code>LoginMessages</code> messages.</p>
-<p>The server implementation should cache <strong>Session ID</strong> and <strong>Session Offer timestamp</strong>
+must be established before being able to process any <code>LoginMessages</code>.</p>
+<p>A server implementation should cache <strong>Session ID</strong> and <strong>Session Offer timestamp</strong>
 per client as they will be needed later.</p>
 
                     </main>
