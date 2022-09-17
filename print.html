@@ -361,7 +361,7 @@ ID of the protocol to address a specific message when several protocols are avai
 is limited to 255 as a result of that.</p>
 <p>Order values may either be explicitly specified using the <code>_MsgOrder</code> field or left away for
 every message within the protocol. In case of the latter, the implementation automatically
-assigns order values in ascending order by sorting message names alphabetically. Mixing both
+assigns order values in ascending order by sorting message names (name from xml tag; NOT _MsgName) alphabetically. Mixing both
 approaches up may result in collisions!</p>
 <h3 id="access-level"><a class="header" href="#access-level">Access level</a></h3>
 <p>The access level defines the minimum value that must be held by a session in order to be
