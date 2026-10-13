@@ -6,20 +6,27 @@ deepest mysteries in the spiral.
 
 ## What it is (not)
 
-This cursed book is the primary source of documentation for the Kronos project, for regular
-users and contributors alike.
+This book documents game protocols, data models, and file formats for
+readers implementing their own clients or servers.
 
 Topics that are within the scope of this book include, among others, documentation of the
 game's inner workings, descriptions of the game protocols, and file formats.
 
 That being said, it is not a goal to discuss the algorithmic implementation details of both
-Kronos and official KingsIsle code.
+Kronos and official KingsIsle code. Reference implementations provide
+evidence for wire behaviour; their architecture, storage, and internal
+APIs are outside the scope of this book.
+
+The [verification record](./verification.md) distinguishes corroborated
+formats, revision-specific evidence, conflicting sources, and missing
+details. Repository agreement does not establish current live behaviour.
 
 ## Contributing
 
-In the interest of access control and sensibility for what we share here, the sources of this
-book are hosted in a private repository with automated deployment to
+The Markdown sources are maintained in
 [`kronos-project/grimoire`](https://github.com/kronos-project/grimoire).
+Some reference repositories are private, so their evidence links require
+organisation access.
 
 If you find any of the information confusing, misleading or wrong, or would like to suggest
 additional material and content to be covered here, don't hesitate to file an issue in the

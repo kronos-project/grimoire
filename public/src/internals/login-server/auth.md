@@ -18,16 +18,21 @@ and **time_millis** being seconds since epoch and subsecond millis extracted fro
 the cached Session Offer timestamp, respectively:
 
 ```py
-from base64 import b64encode as base64
+from base64 import b64encode
 from hashlib import sha512
 
-# Produce a base64-encoded SHA512 hash of the password and hash that again.
-state = sha512(base64(sha512(password).digest()))
-# Mix in salt built from previously cached session information.
-state.update(f"{sid}{time_secs}{time_millis}")
+password_hash = b64encode(sha512(password.encode("utf-8")).digest())
+salt = f"{sid}{time_secs}{time_millis}".encode("ascii")
+clientkey1 = b64encode(sha512(password_hash + salt).digest()).decode("ascii")
+```
 
-# Receive CK1 as the base64-encoded hash of *password hash* and *salt*.
-clientkey1 = base64(state.digest())
+The salt concatenates unsigned decimal values without separators or zero
+padding. `time_secs` is the low 32 bits of the Session Offer's epoch seconds.
+Base64 uses the standard alphabet and retains `=` padding. For password
+`"1"`, session ID `3258`, seconds `1617815695`, and milliseconds `805`, CK1 is:
+
+```text
++FO9W7DLYNuvLdwvnMaxtJrSD+/h7HHfpzSNKv6G4UomKKoy+uwknGbqrtz4KNHSIS6McowtSTXtQBwwq7bwSQ==
 ```
 
 ## REC1 (serverbound)
@@ -64,7 +69,7 @@ func generateKey(sid uint16, timeSecs uint32, timeMillis uint32) []byte {
 
     binary.LittleEndian.PutUint16(le, sid)
     key[4] = le[0]
-    key[5] = le[2] // This is always zero
+    key[5] = le[2]
     key[6] = le[1]
 
     binary.LittleEndian.PutUint32(le, timeSecs)
@@ -84,22 +89,31 @@ func generateKey(sid uint16, timeSecs uint32, timeMillis uint32) []byte {
 With this at hand, the actual Record can be built and encrypted:
 
 ```go
-func buildRecord1(username string, ck1 string, sid uint16, timeSecs uint32, timeMillis uint32) []byte {
+func buildRecord1(
+    username, ck1 string,
+    sid uint16,
+    timeSecs, timeMillis uint32,
+) ([]byte, error) {
     key := generateKey(sid, timeSecs, timeMillis)
     iv := generateIV()
 
-    // Prepare the Twofish OFB context for later encryption
-    block, _ := twofish.NewCipher(key)
+    block, err := twofish.NewCipher(key)
+    if err != nil {
+        return nil, err
+    }
     stream := cipher.NewOFB(block, iv)
 
-    // Build the plaintext Record we would like to send
-    record := fmt.Sprintf("%v %v %v", sid, username, ck1)
+    record := []byte(fmt.Sprintf("%d %s %s", sid, username, ck1))
 
-    // Encrypt and return the record
     stream.XORKeyStream(record, record)
-    return record
+    return record, nil
 }
 ```
+
+The ciphertext is transferred directly in the binary-capable DML `STR`
+field, without an additional base64 layer or block padding. Each record
+starts a fresh OFB stream with the derived key and IV. The helper above
+uses `encoding/binary`, `fmt`, `crypto/cipher`, and a Twofish block cipher.
 
 Servers will need to decrypt the received record, split the plaintext at whitespace and
 parse it as `Session ID, Username, ClientKey1` which can be accordingly validated
@@ -110,29 +124,36 @@ by deriving the CK1 for the password hash stored along with the username.
 After successful validation of an authentication request, the server is expected
 to respond with a `MSG_USER_AUTHEN_RSP` message.
 
-This contains the unique `UserID` for the account, a `PayingUser` boolean denoting
+This contains the unique `UserID` for the account, a `PayingUser` integer denoting
 whether the account has active membership, and yet another `Rec1` string.
 
 It is Twofish OFB encrypted as well and uses the same keys and IVs as showcased
 above. Clients should use the same logic for decrypting that string.
 
-The Record is yet another base64-encoded string of 64 bytes, referred to as ClientKey2.
-The exact algorithm in use on KI's serverside remains unknown.
+The decrypted record is described as ClientKey2, a base64 string representing
+64 bytes (88 ASCII characters with padding). Its exact format and the
+algorithm used by KI remain unverified in the reviewed repositories.
+kronos-old sends a placeholder response and does not validate PK3, so that
+code cannot establish successful interoperability for this stage.
 
-Note that ClientKey2 is, in itself, a secret value. It is session-agnostic and
-the mere knowledge of it is proof of identity to the server that will
-be validated when entering the game. Implementors are encouraged to use a suitable
+The intended flow treats ClientKey2 as a secret reused when deriving PK3
+for the graphical client's session. Exact KI acceptance and lifetime
+rules remain unverified. Implementors are encouraged to use a suitable
 [CSPRNG](https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator)
-to generate random data and invalidate actively cached CK2s in fixed intervals,
-forcing users to re-authenticate.
+to generate random data. Token expiry and renewal are server policy; the
+reviewed sources do not establish KI's lifetime or invalidation rules.
 
-When everything went smoothly, WizardGraphicalClient will be launced with the
+When everything went smoothly, WizardGraphicalClient will be launched with the
 [`-U` flag](../args.md).
 
 ## Errors
 
 Many different errors may occur during authentication. For that purpose, `MSG_USER_AUTHEN_RSP`
 features an `Error` field which holds a [String ID](../string-id.md).
+The reviewed schema also carries `Reason` (`STR`), `TimeStamp` (`STR`),
+`PayingUser` (`INT`), and `Flags` (`INT`), after `Rec1` in that order.
+Known reason strings include `AuthDown`, `AuthBanned`, `AuthQuarantined`,
+and `AccountClientMismatch`; their complete error mappings are unverified.
 
 Below is a non-exhaustive list of known codes and when they should be sent:
 
@@ -150,5 +171,6 @@ Below is a non-exhaustive list of known codes and when they should be sent:
 
 ## Legacy Authen
 
-The login protocol also features `MSG_USER_AUTHEN` and `MSG_USER_AUTHEN_V2`. They are
-no longer supported and server implementations must ignore these requests.
+The login protocol also features `MSG_USER_AUTHEN` and `MSG_USER_AUTHEN_V2`.
+kronos-old ignores them as deprecated requests. This does not establish
+which historical clients or KI server revisions support them.

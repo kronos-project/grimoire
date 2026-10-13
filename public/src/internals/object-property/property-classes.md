@@ -66,7 +66,7 @@ is a non-exhaustive list of known flag bits and their purpose:
 | 3   | Property may be transmitted to players over the network            |
 | 4   | Property may be transmitted to privileged players over the network |
 | 5   | Property may be persistently saved in database                     |
-| 6   | The property is deprecated and must be skipped by the serializer   |
+| 6   | Deprecated; see the unresolved shallow-mode rule in Serialization  |
 | 7   | ???                                                                |
 | 8   | Property may only be re-serialized if modified                     |
 | 9   | The `std::string` property stores a binary blob                    |

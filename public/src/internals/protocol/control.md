@@ -30,9 +30,16 @@ message.
 | 0x2    | int32   | The high 4 bytes of the UNIX timestamp the message was sent at  |
 | 0x6    | int32   | The low 4 bytes of the UNIX timestamp the message was sent at   |
 | 0xA    | uint32  | The milliseconds into the second this message was sent at       |
-| 0xE    | uint32  | Length prefix for unknown field                                 |
-| 0x12   | uint8[] | Unknown                                                         |
+| 0xE    | uint32  | SignedMessage byte length                                      |
+| 0x12   | uint8[] | SignedMessage and its signature                                |
 | -      | uint8   | Reserved; always zero                                           |
+
+The offer's length-prefixed field is `SignedMessage` in the
+[encryption handshake](../encryption/handshake.md). Its length includes
+the signature but excludes its four-byte prefix and the trailing zero.
+kronos-old's plaintext codec omits both the length and the blob, placing
+the trailing zero at `0xE`. These are different layouts; an empty blob in
+the extended layout still requires a four-byte zero length.
 
 ## Keep Alive
 
@@ -86,7 +93,12 @@ From that point onwards, the session must be kept alive by
 | 0x6    | int32   | The low 4 bytes of the UNIX timestamp the message was sent at  |
 | 0xA    | uint32  | The milliseconds into the second the message was sent at       |
 | 0xE    | uint16  | The proposed session ID from [Session Offer](#session-offer)   |
-| 0x10   | uint32  | Length prefix for unknown field                                |
-| 0x14   | uint8[] | Unknown                                                        |
+| 0x10   | uint32  | EncryptedMessage byte length                                   |
+| 0x14   | uint8[] | Algorithm byte followed by encrypted confirmation              |
 | -      | uint8   | Reserved; always zero                                          |
 
+The accept's length-prefixed field is `EncryptedMessage` in the encryption
+handshake. Its length includes the algorithm byte. kronos-old's plaintext
+codec instead omits the length and blob, placing the trailing zero at
+`0x10`. Select the layout for the target client revision; do not infer it
+solely from whether the connection is encrypted.

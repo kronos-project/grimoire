@@ -1,8 +1,8 @@
 # Framing
 
 At its core, a custom data framing format is used to exchange messages between two peers
-maintaining a connection. No difference is made between TCP-based and UDP-based
-connections.
+maintaining a connection. The reviewed codecs establish the TCP format.
+Equivalent UDP framing and session behaviour have not been verified.
 
 Frames generally start with a [header](#header), followed by the [body](#body) holding the
 frame opcode and the encapsulated message payload. Assume all data to be encoded in
@@ -15,8 +15,7 @@ may be shifted.
 
 ### Small
 
-For [data messages](./data.md) where the DML message payload is below `0x8000` bytes
-in size, the following header is used:
+For bodies below `0x8000` bytes in size, the following header is used:
 
 | Offset | Type       | Description                               |
 |--------|------------|-------------------------------------------|
@@ -25,17 +24,28 @@ in size, the following header is used:
 
 ## Large
 
-For [data messages](./data.md) above `0x7FFF` bytes in length, a different header
-encoding strategy is employed:
+For bodies above `0x7FFF` bytes in length, a different header encoding
+strategy is employed:
 
 | Offset | Type       | Description                               |
 |--------|------------|-------------------------------------------|
 | 0x0    | uint16     | The constant magic `0xF00D`               |
 | 0x2    | uint16     | The constant `0x8000`                     |
-| 0x4    | uint32     | The real size of this "large" frame       |
+| 0x4    | uint32     | The length of the following body          |
 
 A deserializer should thus determine the size of the frame based on whether the
 second header field value is `>= 0x8000`.
+
+Both lengths exclude the outer header. Small headers occupy four bytes;
+large headers occupy eight. Merlin selects the header using the full body
+length. kronos-old instead checks the DML payload length, which disagrees
+near the boundary; see [verification gaps](../../verification.md#transport).
+
+TCP reads are not frame boundaries. Buffer partial headers and bodies, and
+consume exactly one complete frame before parsing the next. A single read
+may contain multiple frames. These lengths describe the plaintext framing;
+encrypted connections first pass through the
+[transport encryption layer](../encryption/handshake.md).
 
 ## Body
 

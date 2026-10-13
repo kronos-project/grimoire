@@ -52,7 +52,13 @@ This structure and everything it encapsulates should be read as many times as ne
 |------------|-------|-------------------------------------------------------------------------------------|
 | ProtocolID | UBYT  | ID of `ExtendedBaseMessages` protocol (always 2)                                    |
 | -          | UBYT  | Type of structure that follows according to the [Message Order](#message-orders)    |
-| Size       | USHRT | Size of this structure including everything it encapsulates                         |
+| Size       | USHRT | Size including this four-byte header and its payload                                |
+
+These entries use a DML-style header without the network frame wrapper or
+trailing zero. A parser can delimit the payload as `Size - 4` bytes. The
+table's leading `UINT` counts entries, not bytes. The reviewed writer
+confirms this header; its reader does not fully implement dictionary and
+record decoding, so the template details below remain partly unverified.
 
 ### RecordTemplate
 
@@ -65,18 +71,20 @@ This structure and everything it encapsulates should be read as many times as ne
 | Name   | Type  | Description                                                                                                            |
 |--------|-------|------------------------------------------------------------------------------------------------------------------------|
 | Length | USHRT | Length prefix of Name                                                                                                  |
-| Name   | STR   | Name of the field<br/>If the name is `_TargetTable` then the TargetTable structure should be read after this structure |
+| Name   | uint8[Length] | Raw name bytes; no second STR prefix. `_TargetTable` denotes the target-table field. |
 | Type   | UBYT  | Type of the field according to the [Type Tags](#type-tag) table                                                        |
-| ?      | UBYT  | DML flags; implementation-specific                                                                                     |
+| ?      | UBYT  | DML flags; wire meanings not yet verified                                                                               |
 
 ### TargetTable
 
-This is assumed to *always* be part of a RecordTemplate as part of the specification.
+The original notes assume this is always part of a RecordTemplate. Its
+placement, value encoding, and interaction with the field type/flags need
+verification; the reviewed table implementation does not establish them.
 
 | Name   | Type  | Description                                          |
 |--------|-------|------------------------------------------------------|
 | Length | USHRT | Length prefix of Name                                |
-| Name   | STR   | The table that Records of this type should belong to |
+| Name   | uint8[Length] | Raw target-table name bytes; no second prefix |
 
 ### Record
 

@@ -22,12 +22,16 @@ Its record holds the following mandatory message fields:
 |---------------------|------|------------------------------------------------------------|
 | ServiceID           | UBYT | A unique service ID for the protocol service provider      |
 | ProtocolType        | STR  | A unique name for the type of protocol being defined       |
-| ProtocolVersion     | INT  | The version of the DML system that is used by the protocol |
+| ProtocolVersion     | INT  | Version metadata for this protocol definition              |
 | ProtocolDescription | STR  | A description of the purpose the protocol serves           |
 
 When serializing protocol messages over the network, the ServiceID identifies the higher-order
 protocol of the message to read. As such, implementors will have to track all accessible
 `ServiceID`s accordingly for lookup.
+
+The reviewed sources do not establish version negotiation on the wire.
+Use the definitions bundled with the target client revision; the version
+field alone does not establish that two layouts are compatible.
 
 For more information on types, records and fields, see the documentation for
 [messages](./messages.md).

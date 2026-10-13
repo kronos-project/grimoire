@@ -22,4 +22,7 @@ PrepPhase
 | 0     | Server admits the client into the game. Provided fields are valid. |
 | 1     | Server has accepted the client into the game, but has not yet provided all necessary information. Wait for another message with updated fields. |
 
-Error???
+These values are retained from the original research notes. The reviewed
+login handler confirms admission status `1` with queue position `0`.
+Busy status `2` and both `PrepPhase` values require versioned captures;
+the reviewed repositories do not implement those paths completely.

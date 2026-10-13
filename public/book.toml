@@ -1,7 +1,7 @@
 [book]
 title = "The Kronos Grimoire"
 authors = ["Valentin B."]
-description = "A deep dive into the game's internals and the Kronos project orchestration"
+description = "Game protocols and file formats for independent clients and servers"
 language = "en"
 
 [rust]

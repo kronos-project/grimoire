@@ -2,12 +2,15 @@
 
 [Foreword](./foreword.md)
 
+- [Verification and Gaps](./verification.md)
+
 - [Graphical Client Arguments](./internals/args.md)
 - [String IDs](./internals/string-id.md)
 - [Data Management Layer](./internals/dml/README.md)
   - [Protocols](./internals/dml/protocols.md)
   - [Messages](./internals/dml/messages.md)
   - [Tables](./internals/dml/tables.md)
+  - [Magic Numbers](./internals/dml/magic-numbers.md)
 - [ObjectProperty](./internals/object-property/README.md)
   - [Property Classes](./internals/object-property/property-classes.md)
   - [Serialization](./internals/object-property/serialization.md)

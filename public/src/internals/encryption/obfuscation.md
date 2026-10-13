@@ -2,6 +2,11 @@
 
 ## Pubkey blob
 
+The reviewed key-blob pattern supports the cipher IDs and key/IV sizes
+below. Cipher modes, padding, exact length semantics, and the runtime
+transformation remain [verification gaps](../../verification.md#encryption).
+This page does not yet specify a complete public-key decoder.
+
 Each public key inside of the binary is encrypted with a symmetric algorithm. There are five different algorithms that can be used for each key:
 
 | Algorithm | N |

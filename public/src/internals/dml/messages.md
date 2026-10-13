@@ -13,13 +13,11 @@ A DML message may be defined like this:
   <RECORD>
     <!-- Message metadata -->
     <_MsgName TYPE="STR" NOXFER="TRUE">MSG_PING</_MsgName>
-    <_MsgType TYPE="UBYT" NOXFER="TRUE">1</_MsgType>
+    <_MsgOrder TYPE="UBYT" NOXFER="TRUE">1</_MsgOrder>
     <_MsgDescription TYPE="STR" NOXFER="TRUE">PING request.</_MsgDescription>
     <_MsgHandler TYPE="STR" NOXFER="TRUE">MSG_Ping</_MsgHandler>
     <_MsgAccessLvl TYPE="UBYT" NOXFER="TRUE">0</_MsgAccessLvl>
 
-    <!-- Data fields -->
-    <Count TYPE="UINT"></Count>
   </RECORD>
 </MSG_PING>
 ```
@@ -56,11 +54,12 @@ using a string acronym:
 |-------|----------|-----------------------------------------------------------------------|
 | BYT   | int8     | Signed 8-bit integer                                                  |
 | UBYT  | uint8    | Unsigned 8-bit integer                                                |
+| SHRT  | int16    | Signed 16-bit integer in little-endian byte order                     |
 | USHRT | uint16   | Unsigned 16-bit integer in little-endian byteorder                    |
 | INT   | int32    | Signed 32-bit integer in little-endian byteorder                      |
 | UINT  | uint32   | Unsigned 32-bit integer in little-endian byteorder                    |
 | STR   | uint8[]  | A length-prefixed string of arbitrary bytes (may be UTF-8)            |
-| WSTR  | uint16[] | A length-prefixed string of UTF-16 code points in little-endian order |
+| WSTR  | uint16[] | A length-prefixed string of UTF-16 code units in little-endian order  |
 | FLT   | float    | IEEE-754 32-bit floating point number in little-endian byteorder      |
 | DBL   | double   | IEEE-754 64-bit floating point number in little-endian byteorder      |
 | GID   | uint64   | Unsigned 64-bit integer in little-endian byteorder                    |
@@ -79,7 +78,19 @@ carry fixed values. As per convention, such fields should always start with an u
 
 Serialization and deserialization of a message works by consecutively iterating through the
 fields in the order they were listed in the message specification, and encoding the value as
-defined by the type. Fields with the `NOXFER` attribute will be skipped.
+defined by the type. Fields with `NOXFER="TRUE"` are skipped. An absent
+attribute or `NOXFER="FALSE"` leaves the field transferable.
+
+`STR` has a little-endian `uint16` byte count followed by that many bytes,
+without a null terminator. It may contain binary data, including embedded
+zero bytes. `WSTR` has a little-endian `uint16` count of UTF-16 code units,
+followed by twice that many bytes in UTF-16LE, without a BOM or terminator.
+Supplementary Unicode characters occupy two code units.
+
+The reviewed sources disagree about large string lengths: Kronos uses a
+signed 16-bit limit, while kronos-old uses an unsigned prefix. The prefix
+width and ordinary positive lengths agree; the upper range needs a client
+capture. See [verification gaps](../../verification.md#dml-and-tables).
 
 #### Example
 
@@ -123,10 +134,15 @@ in subsections of this paragraph.
 | _MsgName        | STR  | true     | The name of the message; Overrides the XML message tag     |
 | _MsgOrder       | UBYT | true     | The [order value](#order-number)                           |
 | _MsgDescription | STR  | true     | Short description of the message and its purpose           |
-| _MsgHandler     | STR  | false    | The handler callback to process this message when received |
+| _MsgHandler     | STR  | varies   | Local handler metadata; not transmitted on the wire       |
 | _MsgAccessLvl   | UBYT | true     | The [access level](#access-level) for the message          |
 
 ### Order number
+
+`_MsgHandler` names in reference XML may refer to customised server
+callbacks. Independent clients and servers do not need those symbols or
+the same dispatch mechanism; the transferable field layout and wire
+service/order pair determine interoperability.
 
 Every message has its own index assigned to it that is unique within a protocol - the order
 value. Order values usually start at `1` and are used in combination with the unique service
@@ -138,7 +154,13 @@ is limited to 255 as a result of that.
 Order values may either be explicitly specified using the `_MsgOrder` field or left away for
 every message within the protocol. In case of the latter, the implementation automatically
 assigns order values in ascending order by sorting message names (name from xml tag; NOT _MsgName) alphabetically. Mixing both
-approaches up may result in collisions!
+approaches is rejected by the reviewed Kronos parsers. Use either explicit
+orders for every message or implicit orders for every message.
+
+The wire identity is the service ID and order number. `_MsgName` is metadata
+and can differ from the XML tag; changing it does not change the order of
+implicitly numbered messages. Use definitions from the target client
+revision, rather than assuming names and orders remain stable.
 
 ### Access level
 

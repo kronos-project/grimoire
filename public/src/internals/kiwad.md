@@ -36,6 +36,9 @@ This is how the official client uses them:
 
 ## File table
 
+The reviewed reader consumes the flags byte but does not verify the
+official client's bit meanings; those above remain original research notes.
+
 This table consists of `n` repetitions of the [file](#file) structure, where `n` is the number
 of archived files as encoded in the [header](#header).
 
@@ -58,21 +61,27 @@ This structure denotes the metadata of an encoded file, needed for extraction an
 If a file is compressed, the corresponding file table entry encodes its uncompressed size
 and the compressed size and the data will run through [zlib](https://zlib.net).
 
-If a file is stored uncompressed, `-1` (or `0xFFFF_FFFF`) will be written for its
-compressed size.
+The original notes record `-1` (or `0xFFFF_FFFF`) as the compressed-size
+sentinel for an uncompressed file. Kronos ignores this field when the
+compression flag is clear, so it does not verify the sentinel universally.
 
-Notably, only `.mp3` and `.ogg` files are shipped uncompressed in official archives
-by KingsIsle.
+Use the compression flag to select the stored size and decoding method.
+File extensions do not determine compression. The path length includes
+the terminating zero byte, and the file offset is absolute from the start
+of the archive.
 
 ### Checksums
 
-The checksum of a file is calculated by CRC32 using the polynomial `0x4C11DB7` and
-reversed input and output values:
+Kronos verifies the checksum over the stored bytes, before decompression.
+It uses CRC-32/ISO-HDLC: polynomial `0x04C11DB7` (reflected form
+`0xEDB88320`), initial register `0xFFFFFFFF`, reflected input and output,
+and final XOR `0xFFFFFFFF`. Python's standard library gives the same result:
 
 ```python
-import crcengine
+import zlib
 
-crc32 = crcengine.create(0x04C11DB7, 32, 0, xor_out=0)
-
-assert crc32(b"KIWAD") == 4265429514
+assert zlib.crc32(b"123456789") == 0xCBF43926
 ```
+
+The [verification record](../verification.md#archives-and-identifiers)
+links the archive reader and checksum evidence.

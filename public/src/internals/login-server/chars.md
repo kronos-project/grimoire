@@ -13,11 +13,35 @@ As explained in the [ObjectProperty chapter](../object-property/), readers shoul
 use wizwalker to obtain a dump of all types (including this one).
 
 `m_schoolOfFocus` is a [string ID](../string-id.md) of the school's literal name
-and `m_nameIndices` is a concatenations of three bytes for each index with the
-MSB always being `0`. Everything else is self-explanatory.
+and `m_nameIndices` is a `uint32` containing three one-byte name indices
+and a zero high byte. The order of the three name components still needs
+confirmation against a client revision.
 
 It is serialized with no serializer configuration flags (value `0`) and a property mask
-of `0x18`.
+of `0x18`, in shallow mode in the reviewed character creation handler.
+This selects properties carrying both network transmission flags. Nested
+appearance and equipment objects require matching type definitions too.
+
+### Message identifiers
+
+The reviewed LoginMessages schema uses different XML tags and `_MsgName`
+aliases for several character messages. The names below denote the same
+wire messages; their service ID is `7`.
+
+| Order | XML tag | `_MsgName` alias |
+|-------|---------|-----------------|
+| 1 | `MSG_CHARACTER_INFO` | `MSG_CHARACTERINFO` |
+| 2 | `MSG_END_CHARACTER_LIST` | `MSG_CHARACTERLIST` |
+| 4 | `MSG_CREATE_CHARACTER` | `MSG_CREATECHARACTER` |
+| 5 | `MSG_CREATE_CHARACTER_RESPONSE` | `MSG_CREATECHARACTERRESPONSE` |
+| 6 | `MSG_DELETE_CHARACTER` | `MSG_DELETECHARACTER` |
+| 7 | `MSG_DELETE_CHARACTER_RESPONSE` | `MSG_DELETECHARACTERRESPONSE` |
+| 8 | `MSG_REQUEST_CHARACTER_LIST` | `MSG_REQUESTCHARACTERLIST` |
+| 12 | `MSG_START_CHARACTER_LIST` | `MSG_STARTCHARACTERLIST` |
+| 28 | `MSG_LOGIN_LOG_CHARACTER_CREATION` | `MSG_LOGINLOGCHARACTERCREATION` |
+
+These orders are a reference snapshot, not a guarantee for other client
+revisions. Use the XML bundled with the target client.
 
 ## Requesting the List
 
@@ -51,7 +75,9 @@ an error or empty [string ID](../string-id.md) on success.
 Errors may occur when the creation info object is malformed or the character
 limit for the account is exhausted.
 
-> TODO: Brute force string for `1745079928`.
+The reviewed handler uses the string ID of `TooManyChars` for an exhausted
+character limit. Its value is `255337254`. The original notes' separate
+error value `1745079928` has not been mapped to a string.
 
 ### Creation Logs
 
@@ -90,6 +116,10 @@ holding an error or empty [string ID](../string-id.md) on success.
 Errors may occur when `CharID` does not exist or references a character that does
 not belong to the currently authenticated account.
 
+The reviewed handler returns the string ID of `DeletionFailed` in this
+case. Both creation and deletion responses carry an `INT` error field;
+the character-list terminator instead uses `UINT`.
+
 ## Entering the Game
 
 When the player selected its character of choice and hits **Play**, the client
@@ -99,8 +129,16 @@ The server will then confirm the selection with `MSG_CHARACTERSELECTED` with IP
 and port of the *Game Server*, a random Key that will be sent back for validation
 later, player and char IDs, the current zone and position, and a potential error.
 
-New Wizards start at `WizardCity/Tutorial_Exterior`, with zone ID `191965934121493239`
-and location `"START"`.
+The original notes record `WizardCity/Tutorial_Exterior`, zone ID
+`191965934121493239`, and location `"START"` for new Wizards. The reviewed
+repositories do not verify this initial zone or the selection exchange.
 
-From this point onwards, the *Login Server* connection is closed and all client
-communication will happen through the *Game Server*.
+The existing [magic numbers notes](../dml/magic-numbers.md) describe
+`PrepPhase = 1` as an incomplete preparation response and `PrepPhase = 0`
+as a completed response with usable connection details. Do not enter the
+game on the incomplete response. These values still need a versioned
+capture for independent confirmation.
+
+The next stage is a connection to the indicated *Game Server*. Exact login
+connection closure timing, the game-server validation message, and how the
+selection key is checked remain [verification gaps](../../verification.md).

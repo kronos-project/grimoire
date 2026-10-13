@@ -1,7 +1,9 @@
 # Sessions
 
 Sessions between a client and a server are an important aspect of the network communication
-as they grant various privileges and confirm the authenticity of a connecting clients.
+as they carry connection state used by later protocol operations. Establishing
+a transport session does not authenticate the user's account; that is a
+separate [login exchange](../login-server/auth.md).
 
 ## Handshake
 
@@ -18,11 +20,16 @@ When the session IDs match and the server does not respond with yet another
 established.
 
 Both parties are expected to cache the relevant information from the handshake, such as
-server uptime values, the timestamp the messages were sent, and obiously also the ID.
+server uptime values, the timestamp the messages were sent, and obviously also the ID.
 Various algorithms may rely on these data as unique variables individually assigned to
 every client.
 
 ## Refreshing a session
+
+The behaviour below is retained from the original notes. The reviewed
+repositories do not establish KI's coordination between servers or the
+scope of session ID uniqueness. Confirm refresh and retry behaviour with
+the target client/server revision before relying on it.
 
 During the lifetime of a TCP or UDP connection with the server, a very common event to
 expect is such sessions actually being dropped in the middle of operations.
@@ -45,9 +52,9 @@ it up to that point.
 
 ## Session ID
 
-The session ID is a unique identifier assigned to every active session individually. It is
-represented as an unsigned 16-bit integer and only one connection may occupy any valid
-session ID at the same time.
+The session ID identifies an active session and is represented as an
+unsigned 16-bit integer. The reviewed code does not establish whether its
+uniqueness extends beyond the server that issued it.
 
 A value of `0` is reserved to the server to indicate that a
 [Keep Alive](./control.md#keep-alive) message is server-initiated. It should never be
@@ -62,11 +69,14 @@ This step involves exchanging [Keep Alive](./control.md#keep-alive) and correspo
 [Keep Alive Rsp](./control.md#keep-alive-rsp) messages at fixed intervals and waiting
 for the response of the peer.
 
-Clients send such a request every **10 seconds**, whereas servers independently do so
-every **60 seconds**.
+The reviewed kronos-old frame helpers specify client requests every
+**10 seconds** and server requests every **60 seconds**. These are reference
+intervals; exact KI timeout and retry policies are not verified.
 
-When no response had been received directly before sending another request, the connection
-is considered dead and the underlying socket should be closed.
+The response echoes the request's six payload bytes, changing the opcode
+from `0x3` to `0x4`. A response's layout is determined by the initiating
+request, rather than by which peer sends the response. How many missed
+responses cause a disconnect remains unverified.
 
 ## Access Level
 

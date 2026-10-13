@@ -17,6 +17,9 @@ argument.
 > is mandatory to bypass KingsIsle's *Patch Server* or the `PatchConfig.xml`
 > change will be reverted before being able to make it into the game.
 
+This patcher behaviour is retained from the original notes; the reviewed
+repositories do not establish it for a current launcher revision.
+
 ## Secondary Message Protocols
 
 The Login Server fundamentally needs to support some basic functionality

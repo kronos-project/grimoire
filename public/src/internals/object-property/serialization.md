@@ -5,6 +5,10 @@ This aims to give insight into the serialization of Property Classes.
 The following uses Python pseudocode for illustration which makes use of format strings
 defined by the [struct module](https://docs.python.org/3/library/struct.html).
 
+These examples illustrate the format with abstract byte/bit buffers.
+Conflicting size, alignment, and filtering rules are recorded in
+[verification gaps](../../verification.md#objectproperty-and-coreobject).
+
 ## Binary
 
 The binary serialization mode is commonly encountered for both local game files and also
@@ -51,12 +55,13 @@ if serializer_flags & WITH_COMPRESSION != 0:
     compressed_object_data = zlib.compress(object_data)
 
     if len(compressed_object_data) < len(object_data):
+        uncompressed_size = len(object_data)
         object_data = compressed_object_data
 
         # Indicate that the data is compressed.
         output.append(1)
         # Write the size of the uncompressed object for the deserializer to validate.
-        output.extend(len(object_data).to_bytes(4, "little"))
+        output.extend(uncompressed_size.to_bytes(4, "little"))
     else:
         # Indicate that the data is uncompressed.
         output.append(0)
@@ -76,8 +81,8 @@ A serializer accepts the following inputs to customize its behavior:
 
 - a boolean denoting whether the output will be *shallow* or *deep*
 
-- a wildcard of property flag bits to only serialize those properties where that mask is
-  an intersection of the actual flags
+- a property mask selecting properties that contain every bit in the mask:
+  `(property.flags & mask) == mask`
 
 #### Data model
 
@@ -101,14 +106,14 @@ serialized as such
 - strings are serialized as UTF-8 bytes with their **length prefixed**
 
 - wide strings are serialized as UTF-16 code points in little-endian order without BOM and with
-their **length prefixed**
+their **length prefixed** in UTF-16 code units, not bytes or Unicode scalar values
 
 - collections, such as lists or vectors, are serialized as a sequence of element values with
 their **length prefixed**
 
 - tuples or arrays with a known length are serialized as just the sequence of elements
 
-- when a property is **opional** (i.e. has bit 8 set in its flags set), its value may be
+- when a property is **optional** (i.e. has bit 8 set in its flags set), its value may be
 skipped (unless the serializer has bit 4 set in its flags); a single bit of `0` denotes that no
 value is given, otherwise a value of `1` followed by the property's value is written
 
@@ -119,8 +124,14 @@ set, as a string representation of the variant name
 
 - **length prefixes** are `uint16_t` for (w)strings and `uint32_t` for collections unless serializer
 bit 1 is set, which enables a common compression algorithm applied to both types - when the length
-is smaller than `0x80`, write it as `uint8_t` with the LSB set to `0`, otherwise write it as
-`uint32_t` with LSB set to `1`
+is smaller than `0x80`, write one zero discriminator bit followed by seven
+length bits; otherwise write one discriminator bit followed by 31 length
+bits. Equivalently, when byte-aligned, the encoded integer is `length << 1`
+for the short form and `(length << 1) | 1` for the long form. For example,
+length `3` encodes as `06`, `127` as `FE`, and `128` as `01 01 00 00`.
+The maximum compact length is `0x7FFFFFFF`. The payload following the prefix
+is byte-aligned. Alignment before compact prefixes differs between the
+reviewed implementations and needs client verification.
 
 #### Type Tag
 
@@ -128,6 +139,10 @@ Every serialized `PropertyClass` state has a type tag associated with it to uniq
 during deserialization.
 
 The type tag is a [**string ID**](../string-id.md) of the type's name.
+
+A zero type tag represents a null object reference and has no property
+payload. Class names and property order must come from the target client's
+type definitions; shallow mode cannot reconstruct missing type metadata.
 
 #### Property Tag
 
@@ -158,9 +173,10 @@ for property in filter(lambda p: p.flags & mask == mask, object.properties):
     serialize_value(buffer, property.value)
 ```
 
-This mode is **not** allowed to skip properties with the `DEPRECATED` (bit 6) flag set, as
-a correct order of values is the only indicator that exists to correctly reconstruct the
-object during deserialization.
+The original notes require deprecated properties to retain their slots in
+shallow mode, but Kronos's generated shallow serializer skips them. The
+client's behaviour is unresolved. Do not assume either rule is universally
+correct without a matching type dump and capture.
 
 #### Deep mode
 
@@ -192,13 +208,25 @@ for property in filter(
     serialize_value(buffer, property.value)
 
     # Patch back the real property size.
+    property_end = len(buffer)
     buffer.seek_bit(property_size_position)
-    buffer.write("<I", len(buffer) - property_size_position)
+    buffer.write("<I", property_end - property_size_position)
+    buffer.seek_bit(property_end)
 
 # Patch back the real object size.
+object_end = len(buffer)
 buffer.seek_bit(object_size_position)
-buffer.write("<I", len(buffer) - object_size_position)
+buffer.write("<I", object_end - object_size_position)
+buffer.seek_bit(object_end)
 ```
+
+Here buffer lengths and positions are in bits. Property sizes include their
+32-bit size field, 32-bit tag, value, and any alignment padding counted from
+the size field's start. The illustrated object size includes its own
+32-bit size field but excludes the preceding type tag. Kronos's reader
+uses that convention; kronos-old's reader disagrees with its own writer
+about those 32 bits. This is a tracked interoperability gap, not proof of
+two supported wire variants.
 
 The order of property entries, while usually maintained, is not as important as it is for
 **shallow** serialization.
