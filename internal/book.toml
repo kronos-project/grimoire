@@ -1,8 +1,0 @@
-[book]
-title = "The Kronos Grimoire (INTERNAL)"
-authors = ["Valentin B."]
-description = "A deep dive into the game's internals and the Kronos project orchestration"
-language = "en"
-
-[rust]
-edition = "2021"
