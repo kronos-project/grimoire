@@ -3,6 +3,7 @@
 [Foreword](./foreword.md)
 
 - [Verification and Gaps](./verification.md)
+- [Binary Layout Notation](./notation.md)
 
 - [Graphical Client Arguments](./internals/args.md)
 - [String IDs](./internals/string-id.md)

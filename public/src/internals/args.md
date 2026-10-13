@@ -1,14 +1,14 @@
 # Graphical Client Arguments
 
-`WizardGraphicalClient` will happily spit out a list of CLI arguments if passed `-?` but this is outdated. 
+`WizardGraphicalClient` will happily spit out a list of CLI arguments if passed
+`-?` but this is outdated.
 
 This page attempts to correctly document a list of available arguments.
 
-These spellings are retained from the original research notes. The
-reviewed repositories do not contain a complete argument parser or a
-versioned help-output fixture. Validate them against the intended client
-revision, especially the tokenisation of credentials passed with `-U`.
-
+These spellings are retained from the original research notes. The reviewed
+repositories do not contain a complete argument parser or a versioned
+help-output fixture. Validate them against the intended client revision,
+especially the tokenisation of credentials passed with `-U`.
 
 | Argument               | Usage                         | Description                                |
 | ---------------------- | ----------------------------- | ------------------------------------------ |
