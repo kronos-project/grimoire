@@ -20,6 +20,7 @@
   - [Handshake](./internals/encryption/handshake.md)
   - [Obfuscation](./internals/encryption/obfuscation.md)
 - [KIWAD Archives](./internals/kiwad.md)
+- [Navigation Maps](./internals/navigation.md)
 - [Login Server](./internals/login-server/README.md)
   - [Groundwork](./internals/login-server/groundwork.md)
   - [Authentication](./internals/login-server/auth.md)
