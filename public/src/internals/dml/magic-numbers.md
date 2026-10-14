@@ -10,15 +10,20 @@ understood magic numbers that have no hash correspondence and just _are_.
 
 ### MSG_USER_ADMIT_IND
 
-Status | Value | Meaning | | ----- | ------- | | 1 | Servers are ready to admit
-the client into the main game | | 2 | Servers are busy and the client must queue
-before entry |
+Status
+
+| Value | Meaning                                                 |
+| ----- | ------------------------------------------------------- |
+| 1     | Servers are ready to admit the client into the game     |
+| 2     | Servers are busy and the client must queue before entry |
 
 ### MSG_CHARACTERSELECTED
 
-PrepPhase | Value | Meaning | | ----- | ------- | | 0 | Server admits the client
-into the game. Provided fields are valid. | | 1 | Server has accepted the client
-into the game, but has not yet provided all necessary information. Wait for
-another message with updated fields. |
+PrepPhase
+
+| Value | Meaning                                                                                                                                         |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | Server admits the client into the game. Provided fields are valid.                                                                              |
+| 1     | Server has accepted the client into the game, but has not yet provided all necessary information. Wait for another message with updated fields. |
 
 Error???
