@@ -1,9 +1,9 @@
 # Graphical Client Arguments
 
-`WizardGraphicalClient` will happily spit out a list of CLI arguments if passed `-?` but this is outdated. 
+`WizardGraphicalClient` will happily spit out a list of CLI arguments if passed
+`-?` but this is outdated.
 
 This page attempts to correctly document a list of available arguments.
-
 
 | Argument               | Usage                         | Description                                |
 | ---------------------- | ----------------------------- | ------------------------------------------ |

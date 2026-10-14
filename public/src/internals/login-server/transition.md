@@ -10,8 +10,8 @@ The next step is the transition from Patch Client to WizardGraphicalClient.
 
 ## PassKey3
 
-PassKey3, or PK3, is derived from ClientKey2 by the client and will be sent
-to the server. It uses the same algorithm as [ClientKey1](./auth.md#clientkey1):
+PassKey3, or PK3, is derived from ClientKey2 by the client and will be sent to
+the server. It uses the same algorithm as [ClientKey1](./auth.md#clientkey1):
 
 ```py
 from base64 import b64encode as base64
@@ -49,16 +49,16 @@ again contains an echo of the `UserID`, `PayingUser` and a potential error code.
 The error codes are once again [string IDs](../string-id.md) with known values
 listed below:
 
-| String              | When to send                                  |
-|---------------------|-----------------------------------------------|
-| `""`                | No error                                      |
-| `"AccountBanned"`   | User's account is banned                      |
-| `"MachineBanned"`   | User's machine is banned                      |
-| `"ValidateFailed"`  | Invalid PK3 for user or internal server error |
-| `"Timeout"`         | Timeout while trying to process the request   |
-| `"FtpCapped"`       | ???                                           |
-| `"ErrorNoLock"`     | ???                                           |
-| `"FailedUpload"`    | ???                                           |
+| String             | When to send                                  |
+| ------------------ | --------------------------------------------- |
+| `""`               | No error                                      |
+| `"AccountBanned"`  | User's account is banned                      |
+| `"MachineBanned"`  | User's machine is banned                      |
+| `"ValidateFailed"` | Invalid PK3 for user or internal server error |
+| `"Timeout"`        | Timeout while trying to process the request   |
+| `"FtpCapped"`      | ???                                           |
+| `"ErrorNoLock"`    | ???                                           |
+| `"FailedUpload"`   | ???                                           |
 
 ## Load Balancing
 
@@ -67,11 +67,11 @@ listed below:
 Immediately after `MSG_USER_VALIDATE_RSP`, the server is expected to follow up
 with `MSG_USER_ADMIT_IND`.
 
-This is a load balancing mechanism with the *Game Server* to ensure not too many
+This is a load balancing mechanism with the _Game Server_ to ensure not too many
 users are trying to enter the game at the same time.
 
-The server is expected to maintain a FIFO queue of users trying to enter the game
-and admit them one at a time when the server can currently handle the load.
+The server is expected to maintain a FIFO queue of users trying to enter the
+game and admit them one at a time when the server can currently handle the load.
 
 When the queue positions of users change, they are supposed to be informed with
 `MSG_USER_ADMIT_IND` every time. The user that was removed from the queue is
@@ -80,13 +80,13 @@ position `0`.
 #### Status
 
 | Value | Meaning |
-|-------|---------|
+| ----- | ------- |
 | `1`   | Success |
 
 ### Afk Handling
 
-The server is expected to kick AFK players at fixed intervals to prevent them from
-taking up server resources unnecessarily.
+The server is expected to kick AFK players at fixed intervals to prevent them
+from taking up server resources unnecessarily.
 
 Each time the player clicks a button in the WizardGraphicalClient, a
 `MSG_LOGIN_NOT_AFK` message should be sent to reset the kick interval for the

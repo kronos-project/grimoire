@@ -1,10 +1,10 @@
 # String ID
 
-In many places throughout the game, strings are hashed into 32-bit integer values
-which are more compact to handle and convey similar intent.
+In many places throughout the game, strings are hashed into 32-bit integer
+values which are more compact to handle and convey similar intent.
 
-Such places are *ObjectProperty* serialization, implementation-defined error codes
-in the network protocol, and enums in code.
+Such places are _ObjectProperty_ serialization, implementation-defined error
+codes in the network protocol, and enums in code.
 
 ## Algorithm
 
