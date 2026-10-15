@@ -2,6 +2,11 @@
 
 ## Pubkey blob
 
+The reviewed key-blob pattern supports the cipher IDs and key/IV sizes below.
+Cipher modes, padding, exact length semantics, and the runtime transformation
+remain [verification gaps](../../verification.md#encryption). This page does not
+yet specify a complete public-key decoder.
+
 Each public key inside of the binary is encrypted with a symmetric algorithm.
 There are five different algorithms that can be used for each key:
 
@@ -27,10 +32,15 @@ At runtime, an additional layer of obfuscation is applied to the key blob.
 
 Each key's datastructure can be expressed as:
 
-| Field         | Type   | Description                        |
-| ------------- | ------ | ---------------------------------- |
-| Length        | uint16 | Expresses length of this structure |
-| Cipher        | byte   | As described in table above        |
-| DecryptionKey | byte[] | 12 or 16 bytes depending on cipher |
-| DecryptionIV  | byte[] | 8 or 16 bytes depending on cipher  |
-| Ciphertext    | byte[] |                                    |
+Layouts use the book's [binary notation](../../notation.md). Offsets start at
+the individual key entry. Let `K` be `12` for SPECK64 and `16` for the other
+ciphers; let `V` be `8` for SPECK64 and `16` otherwise. The ciphertext count
+stays `?` until the declared length's coverage is verified.
+
+| Offset         | Type    | Field          | Description                                         |
+| -------------- | ------- | -------------- | --------------------------------------------------- |
+| `0x00`         | `u16`   | length         | Declared length; exact coverage is unverified       |
+| `0x02`         | `u8`    | cipher         | Symmetric algorithm selector                        |
+| `0x03`         | `u8[K]` | decryption_key | Key bytes                                           |
+| `0x03 + K`     | `u8[V]` | decryption_iv  | IV bytes                                            |
+| `0x03 + K + V` | `u8[?]` | ciphertext     | Encrypted public key; length coverage is unverified |
