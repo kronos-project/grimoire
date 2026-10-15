@@ -2,6 +2,8 @@
 
 ## Overview
 
+This chapter describes the AES-GCM session handshake and its message layouts.
+
 Wizard101 uses AES-GCM, an authenticated symmetric cipher, for encrypting
 traffic. The AES key and IV are generated clientside and exchanged with the
 server by encrypting them using public key cryptography, or more specifically
@@ -42,57 +44,148 @@ these requirements.
 The handshake begins with a SessionOffer packet from the server. The signed
 message is followed by 256 bytes of an RSA signature.
 
-| Offset | Type    | Description                                                    |
-| ------ | ------- | -------------------------------------------------------------- |
-| 0x0    | uint16  | The proposed to agree on                                       |
-| 0x2    | int32   | The high 4 bytes of the UNIX timestamp the message was sent at |
-| 0x6    | int32   | The low 4 bytes of the UNIX timestamp the message was sent at  |
-| 0xA    | uint32  | The milliseconds into the second this message was sent at      |
-| 0xE    | uint32  | Length prefix for the following SignedMessage                  |
-| 0x12   | uint8[] | A message suffixed with an RSA signature for the message       |
-| -      | uint8   | Reserved; always zero                                          |
+Layouts use the book's [binary notation](../../notation.md). The following outer
+layout matches [Session Offer](../protocol/control.md#session-offer). Offsets
+start at its control payload; let `L` be `signed_message_length`.
 
-The structure of the signed message is as follows:
+| Offset     | Type    | Field                 | Description                                     |
+| ---------- | ------- | --------------------- | ----------------------------------------------- |
+| `0x00`     | `u16`   | session_id            | Proposed session ID                             |
+| `0x02`     | `i32`   | timestamp_high        | High 32 bits of epoch seconds                   |
+| `0x06`     | `i32`   | timestamp_low         | Low 32 bits of epoch seconds                    |
+| `0x0A`     | `u32`   | timestamp_millis      | Milliseconds into the second                    |
+| `0x0E`     | `u32`   | signed_message_length | Signed blob byte count, including its signature |
+| `0x12`     | `u8[L]` | signed_message        | Signed message and RSA signature                |
+| `0x12 + L` | `u8`    | terminator            | Always `0`; outside the signed blob             |
 
-| Offset | Type   | Name            | Description                                       |
-| ------ | ------ | --------------- | ------------------------------------------------- |
-| 0x0    | byte   | Flags           |                                                   |
-| 0x1    | byte   | KeySlot         | Key slot selected by the server                   |
-| 0x2    | byte   | KeyMask         | Key XOR mask used for decoding the RSA public key |
-| 0x3    | byte   | ChallengeLength | Length of challenge bytes                         |
-| 0x4    | byte[] | Challenge       |                                                   |
-| -      | uint32 | Nonce           | One-time value to be echoed back to the server    |
+The signed blob has the following layout, with offsets relative to the start of
+the length-prefixed blob:
+
+Let `C` be `challenge_length`, including the FNV fields and challenge-type byte.
+The RSA signature is 256 bytes for a 2048-bit key.
+
+| Offset     | Type        | Field            | Description                                       |
+| ---------- | ----------- | ---------------- | ------------------------------------------------- |
+| `0x00`     | `u8`        | flags            | Session flags                                     |
+| `0x01`     | `u8`        | key_slot         | RSA key selected by the server                    |
+| `0x02`     | `u8`        | key_mask         | XOR mask for decoding the RSA public key          |
+| `0x03`     | `u8`        | challenge_length | Byte count of the region beginning at `0x04`      |
+| `0x04`     | `u16`       | fnv_offset       | Offset into the raw keyring blob                  |
+| `0x06`     | `u16`       | fnv_length       | Keyring byte count to hash                        |
+| `0x08`     | `u8`        | challenge_type   | Challenge algorithm selector                      |
+| `0x09`     | `u8[C - 5]` | challenge_data   | Challenge-specific data                           |
+| `0x04 + C` | `u32`       | nonce            | Value echoed back to the server                   |
+| `0x08 + C` | `u8[256]`   | signature        | RSA signature of all preceding bytes in this blob |
+
+The nonce is at `0x04 + C`. After it come 256 signature bytes. The signature
+covers the signed portion from `flags` through `nonce`, excluding the signature
+itself, length prefix, and outer session fields. It uses RSA PKCS#1 v1.5 and
+SHA-1. The key-slot selector addresses one of five keys, indexed `0` through
+`4`.
+
+Challenge type `0xF1` selects the ClientSig integrity challenge. Its response is
+a `u32`.
 
 The client will then decode the key slot selected by the server and use the
 resulting public key to verify the signature. It will also compute the challenge
 and assemble a SessionAccept packet to return to the server:
 
-| Offset | Type    | Description                                                    |
-| ------ | ------- | -------------------------------------------------------------- |
-| 0x0    | uint16  | Reserved; always zero                                          |
-| 0x2    | int32   | The high 4 bytes of the UNIX timestamp the message was sent at |
-| 0x6    | int32   | The low 4 bytes of the UNIX timestamp the message was sent at  |
-| 0xA    | uint32  | The milliseconds into the second the message was sent at       |
-| 0xE    | uint16  | The proposed session ID from SessionOffer                      |
-| 0x10   | uint32  | Length prefix for the following EncryptedMessage               |
-| 0x14   | uint8   | A byte denoting the asymmetric encryption algorithm            |
-| 0x15   | uint8[] | An encrypted string which contains the session key and IV      |
+Offsets start at the control payload. Let `L` be `encrypted_message_length`;
+this is the [Session Accept layout](../protocol/control.md#session-accept) with
+the encrypted blob's algorithm and ciphertext shown separately.
+
+| Offset     | Type        | Field                    | Description                                   |
+| ---------- | ----------- | ------------------------ | --------------------------------------------- |
+| `0x00`     | `u16`       | reserved                 | Always `0`                                    |
+| `0x02`     | `i32`       | timestamp_high           | High 32 bits of epoch seconds                 |
+| `0x06`     | `i32`       | timestamp_low            | Low 32 bits of epoch seconds                  |
+| `0x0A`     | `u32`       | timestamp_millis         | Milliseconds into the second                  |
+| `0x0E`     | `u16`       | session_id               | Proposed session ID from the offer            |
+| `0x10`     | `u32`       | encrypted_message_length | Blob byte count, including the algorithm byte |
+| `0x14`     | `u8`        | algorithm                | Asymmetric encryption selector                |
+| `0x15`     | `u8[L - 1]` | ciphertext               | RSA-encrypted confirmation                    |
+| `0x14 + L` | `u8`        | terminator               | Always `0`; outside the encrypted blob        |
 
 | Algorithm            | Value |
 | -------------------- | ----- |
 | RSA/OAEP-MGF1(SHA-1) | 0x1   |
 
-## Unencrypted mode
+RSA encryption uses OAEP with SHA-1, MGF1(SHA-1), and an empty label. The length
+includes the algorithm byte and RSA ciphertext. With a 2048-bit key it is `257`,
+followed by the separate trailing zero.
 
-The client can opt-out of encryption by setting the serverbound EncryptedMessage
-field to a single null byte in the SessionAccept message. However, the live
-server will only respond to a subset of the LOGIN protocol in this mode. For
-example, a request for the character list will be ignored. It is believed that
-this mode exists for backwards compatibility in the launcher.
+### Encrypted confirmation plaintext
 
-The server can also opt-out of encryption by omitting the SignedMessage field.
-This is a vulnerability because it makes man-in-the-middle attacks possible in
-the handshake phase by terminating the server's encryption and forwarding
-unencrypted packets to the client. Kingsisle have unfortunately relied on
-security-by-obscurity and overlooked what is a fairly amateur flaw. Overall, the
-risk to players is low so this has not been reported.
+The decrypted confirmation plaintext has this layout. All integers are
+little-endian.
+
+Offsets start at the decrypted confirmation, not at its RSA ciphertext.
+
+| Offset | Type     | Field              | Description                                  |
+| ------ | -------- | ------------------ | -------------------------------------------- |
+| `0x00` | `u8`     | flags              | Session flags                                |
+| `0x01` | `u32`    | fnv_result         | FNV-1a-32 hash of the offered keyring region |
+| `0x05` | `u32`    | challenge_response | ClientSig response for challenge type `0xF1` |
+| `0x09` | `u32`    | nonce              | Echo of the offer nonce                      |
+| `0x0D` | `u32`    | timestamp_secs     | Client epoch seconds                         |
+| `0x11` | `u8[16]` | aes_key            | AES-128 key                                  |
+| `0x21` | `u8[16]` | iv                 | Initial GCM IV                               |
+
+The confirmation plaintext is 49 bytes. FNV-1a-32 starts at `0x811C9DC5`. For
+each selected raw keyring byte, XOR the byte and multiply by `0x01000193`,
+wrapping to 32 bits. Hash the raw blob region, rather than the decoded ASN.1
+key.
+
+The `0xF1` challenge contains three little-endian `u32` values after its type
+byte. The first is a set of buffer flags: bits 5, 9, 12, and 17 control the
+disabled, offsets, modules, and XOR-encoding options. The second selects the
+hash operation and its parameters. Its low two bits select one of four per-byte
+hash functions, bits 2–5 set the chunk size plus one, bits 6–7 set the repeat
+count plus one, and the high bits provide the initial hash value. The third
+value is the key used to scramble the selected buffers. The challenge handler
+assembles the selected data, applies the requested hash operation, and returns
+the resulting `u32` in `challenge_response`.
+
+ClientSig is client-integrity data used by this challenge. It contains code
+offsets, hashes of client dependency modules, and code bytes copied from the
+client at those offsets. The challenge selects and combines these buffers before
+hashing them; the returned value lets the server check the client's integrity
+response.
+
+## ClientSig file format
+
+Each `ClientSig.bin` chunk starts with a little-endian `u32` ciphertext length,
+followed by an RSA-OAEP ciphertext. Decrypt each chunk with the corresponding
+RSA private key, using OAEP with SHA-1 and MGF1-SHA-1, then concatenate the
+decrypted chunks. The result is the ClientSig data:
+
+| Field         | Type    | Contents                              |
+| ------------- | ------- | ------------------------------------- |
+| `offsets_len` | `u32`   | Number of offset bytes                |
+| `offsets`     | `u8[N]` | Offsets of copied code                |
+| `modules_len` | `u32`   | Number of module-hash bytes           |
+| `modules`     | `u8[N]` | Module hashes for client dependencies |
+| `code_len`    | `u32`   | Number of code bytes                  |
+| `code`        | `u8[N]` | Code fragments copied from offsets    |
+
+### Encrypted stream boundaries
+
+The offer and accept are exchanged as plaintext frames. After the accept, the
+client and server use AES-GCM for the entire subsequent framed byte stream,
+including frame headers. There are independent cipher states and byte counts in
+each direction, initially using the exchanged key and IV.
+
+The periodic boundaries are `65536` ciphertext bytes towards the client and
+`4096` towards the server. At each boundary, a 16-byte tag is followed by a
+16-byte replacement IV. These 32 bytes belong to the encryption layer, have no
+`0xF00D` header, and do not count towards the next ciphertext interval. A
+boundary may interrupt a frame or fall between frames; remove the tag/IV bytes
+before passing decrypted bytes to the frame parser.
+
+Offsets in the boundary record start immediately after the preceding ciphertext
+interval:
+
+| Offset | Type     | Field | Description                                   |
+| ------ | -------- | ----- | --------------------------------------------- |
+| `0x00` | `u8[16]` | tag   | Authentication tag for the preceding interval |
+| `0x10` | `u8[16]` | iv    | IV for the following interval                 |
